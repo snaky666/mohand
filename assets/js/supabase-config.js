@@ -9,13 +9,36 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Initialize Supabase client
 let supabase = null;
 
+// إعداد خيارات الاتصال
+const supabaseOptions = {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
+  global: {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+};
+
 try {
   if (typeof window !== 'undefined' && window.supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('Supabase initialized successfully');
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, supabaseOptions);
+    console.log('✅ Supabase initialized successfully');
+    
+    // اختبار الاتصال
+    supabase.from('bookings').select('count', { count: 'exact', head: true })
+      .then(({ error }) => {
+        if (error) {
+          console.error('❌ Supabase connection test failed:', error.message);
+        } else {
+          console.log('✅ Supabase connection test successful');
+        }
+      });
   } else {
-    console.error('Supabase library not loaded');
+    console.error('❌ Supabase library not loaded');
   }
 } catch (error) {
-  console.error('Failed to initialize Supabase:', error);
+  console.error('❌ Failed to initialize Supabase:', error);
 }

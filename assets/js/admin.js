@@ -67,7 +67,15 @@ async function loadStatistics() {
 
 // تحميل الحجوزات
 async function loadBookings() {
+    const tableBody = document.getElementById('bookingsTable');
+    
     try {
+        if (!supabaseAdmin) {
+            throw new Error('Supabase admin client not initialized');
+        }
+
+        tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">جارٍ التحميل...</td></tr>';
+
         const { data: bookings, error } = await supabaseAdmin
             .from('bookings')
             .select('*')
@@ -75,13 +83,14 @@ async function loadBookings() {
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error('Supabase error:', error);
-            throw error;
+            console.error('❌ Supabase error details:', error);
+            throw new Error(error.message || 'فشل تحميل الحجوزات');
         }
 
-        const tableBody = document.getElementById('bookingsTable');
+        console.log('✅ Loaded bookings:', bookings?.length || 0);
+
         if (!tableBody) {
-            console.error('Table body element not found');
+            console.error('❌ Table body element not found');
             return;
         }
 
@@ -111,10 +120,9 @@ async function loadBookings() {
             tableBody.appendChild(row);
         });
     } catch (error) {
-        console.error('Error loading bookings:', error);
-        const tableBody = document.getElementById('bookingsTable');
+        console.error('❌ Error loading bookings:', error);
         if (tableBody) {
-            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color: #ff7b7b;">خطأ في تحميل الحجوزات</td></tr>';
+            tableBody.innerHTML = `<tr><td colspan="5" class="empty-state" style="color: #ff7b7b;">خطأ في تحميل الحجوزات: ${error.message}</td></tr>`;
         }
     }
 }
