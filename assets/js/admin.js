@@ -1,5 +1,5 @@
 // admin.js - Supabase Admin Panel
-const ADMIN_PASSWORD = 'admin123'; // ⚠️ غيّر هذا!
+const ADMIN_PASSWORD = 'mohand2004'; // ⚠️ غيّر هذا!
 const PRICE_PER_BOOKING = 500;
 
 // Supabase Admin Client (يستخدم service role key)
