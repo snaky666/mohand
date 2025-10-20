@@ -2,15 +2,17 @@
 const TOTAL_DAYS = 15;
 const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
-let supabase = null;
+// استخدام إعدادات Supabase من ملف supabase-config.js
+let supabaseClient = null;
 
-async function initSupabase() {
+function initSupabase() {
   try {
-    // Hardcoded Supabase credentials for client-side use
-    const supabaseUrl = 'https://your_supabase_url.supabase.co'; // Replace with your Supabase URL
-    const supabaseKey = 'your_supabase_key'; // Replace with your Supabase anon key
-    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    return true;
+    // استخدام الإعدادات من supabase-config.js
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      return true;
+    }
+    return false;
   } catch (error) {
     console.error('Failed to initialize Supabase:', error);
     return false;
@@ -31,7 +33,7 @@ function getDailyCapacity(date) {
 
 async function loadBookings() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('bookings')
       .select('*')
       .order('day', { ascending: true });
@@ -53,7 +55,7 @@ async function loadBookings() {
 
 async function saveBooking(booking) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('bookings')
       .insert([{
         name: booking.name,
@@ -72,7 +74,7 @@ async function saveBooking(booking) {
 
 async function loadAnnouncement() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('announcements')
       .select('message')
       .order('created_at', { ascending: false })
@@ -123,7 +125,7 @@ function getAvailableDates() {
 
 async function countForDate(dateStr) {
   try {
-    const { count, error } = await supabase
+    const { count, error } = await supabaseClient
       .from('bookings')
       .select('*', { count: 'exact', head: true })
       .eq('day', dateStr);
@@ -139,7 +141,7 @@ async function countForDate(dateStr) {
 async function cleanOldBookings() {
   try {
     const today = getDateString(new Date());
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('bookings')
       .delete()
       .lt('day', today);
@@ -315,7 +317,7 @@ function setupSidebar() {
 }
 
 async function initApp() {
-  const initialized = await initSupabase();
+  const initialized = initSupabase();
   if (!initialized) {
     showMessage("فشل الاتصال بقاعدة البيانات. يرجى المحاولة لاحقاً.", "error");
     return;
