@@ -165,16 +165,47 @@
     <div class="credits">© 2025 ⵎⵓⵃⵎⵎⴷ barber</div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // عرض الإعلان الكتابي من الإدارة
-    const ANN_KEY = "barber_announcement_v1";
-    
-    function loadAnnouncement() {
-      return localStorage.getItem(ANN_KEY) || "";
+    let supabase = null;
+
+    async function initSupabase() {
+      try {
+        const response = await fetch('/api/config');
+        const config = await response.json();
+        supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+        return true;
+      } catch (error) {
+        console.error('Failed to initialize Supabase:', error);
+        return false;
+      }
+    }
+
+    async function loadAnnouncement() {
+      try {
+        const { data, error } = await supabase
+          .from('announcements')
+          .select('message')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (error) throw error;
+        return data?.message || "";
+      } catch (e) {
+        console.error('Error loading announcement:', e);
+        return "";
+      }
     }
     
-    document.addEventListener("DOMContentLoaded", () => {
-      const ann = loadAnnouncement();
+    async function initAds() {
+      const initialized = await initSupabase();
+      if (!initialized) {
+        console.error('Failed to initialize Supabase');
+        return;
+      }
+
+      const ann = await loadAnnouncement();
       if (ann.trim()) {
         document.getElementById("adsAnnouncement").style.display = "block";
         document.getElementById("adsAnnouncementText").textContent = ann;
@@ -184,7 +215,7 @@
       const waLink = document.getElementById("waLink");
       const waFooter = document.getElementById("whatsappFooter");
       const waSidebar = document.getElementById("waSidebar");
-      const phoneForWA = "213555123456";
+      const phoneForWA = "213557364841";
       if (waLink) waLink.href = `https://wa.me/${phoneForWA}`;
       if (waFooter) waFooter.href = `https://wa.me/${phoneForWA}`;
       if (waSidebar) waSidebar.href = `https://wa.me/${phoneForWA}`;
@@ -220,7 +251,9 @@
           });
         });
       }
-    });
+    }
+
+    document.addEventListener("DOMContentLoaded", initAds);
   </script>
 </body>
 </html>

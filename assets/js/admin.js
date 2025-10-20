@@ -1,15 +1,106 @@
-// admin.js - تحكم بسيط (client-side)
-const STORAGE_KEY = "barber_bookings_v1";
-const ANN_KEY = "barber_announcement_v1";
+// admin.js - Supabase Admin Panel
+let supabase = null;
 
-function loadBookings(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }catch(e){return [];}}
-function saveBookings(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
-function loadAnnouncement(){ return localStorage.getItem(ANN_KEY) || ""; }
-function saveAnnouncement(t){ localStorage.setItem(ANN_KEY, t); }
+async function initSupabase() {
+  try {
+    const response = await fetch('/api/config');
+    const config = await response.json();
+    supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+    return true;
+  } catch (error) {
+    console.error('Failed to initialize Supabase:', error);
+    return false;
+  }
+}
 
-function calculateStats(){
-  const list = loadBookings();
-  const PRICE_PER_BOOKING = 500; // سعر الحلاقة الواحدة (يمكن تعديله)
+async function loadBookings() {
+  try {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('day', { ascending: true });
+    
+    if (error) throw error;
+    
+    return data.map(booking => ({
+      id: booking.id,
+      idShort: booking.id.substring(0, 8),
+      name: booking.name,
+      phone: booking.phone,
+      dateStr: booking.day,
+      dayName: getArabicDayName(new Date(booking.day + 'T00:00:00'))
+    }));
+  } catch (e) {
+    console.error('Error loading bookings:', e);
+    return [];
+  }
+}
+
+async function deleteBooking(id) {
+  try {
+    const { error } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error('Error deleting booking:', e);
+    return false;
+  }
+}
+
+async function loadAnnouncement() {
+  try {
+    const { data, error } = await supabase
+      .from('announcements')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || { id: null, message: "" };
+  } catch (e) {
+    console.error('Error loading announcement:', e);
+    return { id: null, message: "" };
+  }
+}
+
+async function saveAnnouncement(text) {
+  try {
+    const announcement = await loadAnnouncement();
+    
+    if (announcement.id) {
+      const { error } = await supabase
+        .from('announcements')
+        .update({ message: text })
+        .eq('id', announcement.id);
+      
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('announcements')
+        .insert([{ message: text }]);
+      
+      if (error) throw error;
+    }
+    return true;
+  } catch (e) {
+    console.error('Error saving announcement:', e);
+    return false;
+  }
+}
+
+function getArabicDayName(date) {
+  const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+  return DAYS_AR[date.getDay()];
+}
+
+async function calculateStats() {
+  const list = await loadBookings();
+  const PRICE_PER_BOOKING = 500;
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -25,18 +116,15 @@ function calculateStats(){
   list.forEach(b => {
     const bookingDate = new Date(b.dateStr + 'T00:00:00');
     
-    // حجوزات اليوم
-    if(b.dateStr === todayStr){
+    if (b.dateStr === todayStr) {
       todayCount++;
     }
     
-    // حجوزات الشهر
-    if(bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear){
+    if (bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear) {
       monthlyCount++;
     }
     
-    // حجوزات السنة
-    if(bookingDate.getFullYear() === currentYear){
+    if (bookingDate.getFullYear() === currentYear) {
       yearlyCount++;
     }
   });
@@ -49,28 +137,29 @@ function calculateStats(){
   };
 }
 
-function updateStats(){
-  const stats = calculateStats();
+async function updateStats() {
+  const stats = await calculateStats();
   document.getElementById("totalBookings").textContent = stats.total;
   document.getElementById("todayBookings").textContent = stats.today;
   document.getElementById("monthlyIncome").textContent = stats.monthlyIncome.toLocaleString('ar-DZ') + " دج";
   document.getElementById("yearlyIncome").textContent = stats.yearlyIncome.toLocaleString('ar-DZ') + " دج";
 }
 
-function renderAdmin(){
-  const list = loadBookings();
+async function renderAdmin() {
+  const list = await loadBookings();
   const container = document.getElementById("adminList");
   
-  // تحديث الإحصائيات
-  updateStats();
+  await updateStats();
   
-  if(!list.length){ container.innerHTML = "<div class='muted'>لا توجد حجوزات.</div>"; return; }
+  if (!list.length) {
+    container.innerHTML = "<div class='muted'>لا توجد حجوزات.</div>";
+    return;
+  }
   
-  // ترتيب حسب التاريخ
   const sortedList = [...list].sort((a, b) => a.dateStr.localeCompare(b.dateStr));
   
   let html = "<div class='list'>";
-  sortedList.forEach((b, idx)=>{
+  sortedList.forEach((b) => {
     const dateObj = new Date(b.dateStr + 'T00:00:00');
     const displayDate = `${b.dayName} - ${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
     
@@ -79,43 +168,70 @@ function renderAdmin(){
   html += "</div>";
   container.innerHTML = html;
   
-  // attach delete
-  container.querySelectorAll("button[data-id]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
+  container.querySelectorAll("button[data-id]").forEach(btn => {
+    btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
-      if(!confirm("هل تريد حذف هذا الحجز؟")) return;
-      const cur = loadBookings();
-      const filtered = cur.filter(b => b.id !== id);
-      saveBookings(filtered);
-      renderAdmin();
+      if (!confirm("هل تريد حذف هذا الحجز؟")) return;
+      
+      const success = await deleteBooking(id);
+      if (success) {
+        await renderAdmin();
+      } else {
+        alert("حدث خطأ أثناء الحذف. حاول مرة أخرى.");
+      }
     });
   });
 }
 
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[m]));
+}
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  // simple auth
+async function initAdmin() {
+  const initialized = await initSupabase();
+  if (!initialized) {
+    alert("فشل الاتصال بقاعدة البيانات. يرجى المحاولة لاحقاً.");
+    return;
+  }
+
   const correct = "admin123";
   const pw = prompt("أدخل كلمة مرور المدير:");
-  if(pw !== correct){
+  if (pw !== correct) {
     alert("كلمة المرور خاطئة. سيتم توجيهك إلى الصفحة الرئيسية.");
     window.location.href = "index.html";
     return;
   }
 
-  // announcement controls
+  const announcement = await loadAnnouncement();
   const annInput = document.getElementById("announcementInput");
-  annInput.value = loadAnnouncement();
-  document.getElementById("saveAnn").addEventListener("click", ()=>{
-    saveAnnouncement(annInput.value.trim());
-    alert("تم نشر الإعلان.");
-  });
-  document.getElementById("clearAnn").addEventListener("click", ()=>{
-    annInput.value = "";
-    saveAnnouncement("");
-    alert("تم إزالة الإعلان.");
+  annInput.value = announcement.message;
+
+  document.getElementById("saveAnn").addEventListener("click", async () => {
+    const success = await saveAnnouncement(annInput.value.trim());
+    if (success) {
+      alert("تم نشر الإعلان.");
+    } else {
+      alert("حدث خطأ أثناء النشر. حاول مرة أخرى.");
+    }
   });
 
-  renderAdmin();
-});
+  document.getElementById("clearAnn").addEventListener("click", async () => {
+    annInput.value = "";
+    const success = await saveAnnouncement("");
+    if (success) {
+      alert("تم إزالة الإعلان.");
+    } else {
+      alert("حدث خطأ. حاول مرة أخرى.");
+    }
+  });
+
+  await renderAdmin();
+}
+
+document.addEventListener("DOMContentLoaded", initAdmin);

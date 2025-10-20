@@ -1,108 +1,156 @@
-# ⵎⵓⵃⵎⵎⴷ Barber - Booking System
+# ⵎⵓⵃⵎⵎⴷ Barber - نظام الحجز
 
-## Overview
-A premium static HTML/CSS/JavaScript barber shop booking application in Arabic. The app features a stunning modern design with smooth animations, glassmorphism effects, branded social media icons, and a beautiful dark theme. Customers can book appointments, view services and promotions, and admins can manage bookings and announcements.
+## نظرة عامة
+تطبيق حجز مواعيد صالون حلاقة احترافي باللغة العربية. التطبيق يتميز بتصميم عصري رائع مع رسوم متحركة سلسة، تأثيرات زجاجية، أيقونات وسائل التواصل الاجتماعي ذات العلامات التجارية، وموضوع داكن جميل. يمكن للعملاء حجز المواعيد وعرض الخدمات والعروض، ويمكن للمديرين إدارة الحجوزات والإعلانات.
 
-## Project Structure
-- **index.html**: Main customer-facing booking page
-- **ads.html**: Services and promotions page with pricing
-- **admin.html**: Admin panel for managing bookings (password: admin123)
-- **assets/css/style.css**: Premium CSS with modern effects and animations
-- **assets/js/main.js**: Customer booking logic with localStorage
-- **assets/js/admin.js**: Admin panel logic
-- **server.py**: Python HTTP server with cache control
+## هيكل المشروع
+- **index.html**: الصفحة الرئيسية لحجز المواعيد
+- **ads.html**: صفحة الخدمات والعروض مع الأسعار
+- **admin.html**: لوحة الإدارة لإدارة الحجوزات (كلمة المرور: admin123)
+- **assets/css/style.css**: ملف CSS الاحترافي مع التأثيرات والرسوم المتحركة الحديثة
+- **assets/js/main.js**: منطق الحجز للعملاء مع Supabase
+- **assets/js/admin.js**: منطق لوحة الإدارة مع Supabase
+- **server.py**: خادم HTTP مع Python مع التحكم في ذاكرة التخزين المؤقت وإعدادات Supabase
+- **supabase-setup.sql**: ملف إعداد قاعدة البيانات
+- **SUPABASE_SETUP.md**: دليل الإعداد التفصيلي
 
-## Key Features
-- **Premium Design**: Modern dark theme with glassmorphism, gradients, and smooth animations
-- **Branded Social Icons**: Professional SVG icons with official brand colors:
-  - WhatsApp: Green gradient (#25D366 to #128C7E)
-  - Instagram: Multi-color gradient (purple to pink to orange)
-  - Facebook: Blue gradient (#1877F2 to #0C63D4)
-- **Ads Page**: Dedicated page for services and promotions with:
-  - Responsive grid layout
-  - Featured cards with special styling
-  - Pricing display with old/new prices
-  - Service badges (special offers, new)
-  - Additional services list
-- Client-side only (no backend database)
-- Data stored in browser localStorage
-- Daily booking capacity limits (configurable per day)
-- Admin panel with simple password protection
-- Announcement system for customer notifications
-- Arabic/RTL interface with beautiful typography
-- WhatsApp integration links
-- Fully responsive design for all devices
+## الميزات الرئيسية
+- **تصميم احترافي**: موضوع داكن عصري مع تأثيرات زجاجية وتدرجات ورسوم متحركة سلسة
+- **أيقونات وسائل التواصل**: أيقونات SVG احترافية بألوان العلامات التجارية الرسمية:
+  - واتساب: تدرج أخضر (#25D366 إلى #128C7E)
+  - إنستغرام: تدرج متعدد الألوان (من البنفسجي إلى الوردي إلى البرتقالي)
+  - فيسبوك: تدرج أزرق (#1877F2 إلى #0C63D4)
+- **صفحة العروض**: صفحة مخصصة للخدمات والعروض مع:
+  - تخطيط شبكة متجاوب
+  - بطاقات مميزة مع تصميم خاص
+  - عرض الأسعار مع الأسعار القديمة/الجديدة
+  - شارات الخدمات (العروض الخاصة، الجديد)
+  - قائمة الخدمات الإضافية
+- **قاعدة بيانات Supabase**: تخزين موثوق وآمن في السحابة
+- **سعة الحجز اليومية**: حدود قابلة للتخصيص لكل يوم
+- **لوحة إدارة**: حماية بكلمة مرور بسيطة
+- **نظام الإعلانات**: لإخطارات العملاء
+- **واجهة عربية/RTL**: طباعة جميلة بخط Tajawal
+- **تكامل واتساب**: روابط للتواصل المباشر
+- **تصميم متجاوب بالكامل**: لجميع الأجهزة
 
-## Pages
-1. **Home (index.html)**: Booking form and upcoming reservations
-2. **Ads (ads.html)**: Services, promotions, and pricing
-3. **Admin (admin.html)**: Manage bookings and announcements
+## الصفحات
+1. **الرئيسية (index.html)**: نموذج الحجز والحجوزات القادمة
+2. **العروض (ads.html)**: الخدمات والعروض والأسعار
+3. **الإدارة (admin.html)**: إدارة الحجوزات والإعلانات
 
-## Design Highlights
-- Glassmorphism cards with backdrop blur
-- Animated gradients on logo and buttons
-- Professional SVG social media icons with brand colors
-- Smooth hover effects with scale and glow
-- Premium color palette (gold, coral, purple accents)
-- Enhanced form inputs with focus states
-- Beautiful shadows and glow effects
-- Accessible contrast ratios
-- Staggered animations for ad cards
+## تفاصيل التصميم
+- بطاقات زجاجية مع ضبابية خلفية
+- تدرجات متحركة على الشعار والأزرار
+- أيقونات SVG احترافية لوسائل التواصل بألوان العلامات التجارية
+- تأثيرات تحويم سلسة مع تكبير وتوهج
+- لوحة ألوان احترافية (ذهبي، مرجاني، بنفسجي)
+- حقول إدخال محسنة مع حالات التركيز
+- ظلال وتوهجات جميلة
+- نسب تباين يسهل الوصول إليها
+- رسوم متحركة متدرجة لبطاقات العروض
 
-## Technical Details
-- **Language**: Pure HTML/CSS/JavaScript (no framework)
-- **Data Storage**: Browser localStorage
-- **Server**: Python HTTP server on port 5000
-- **Deployment**: Static site suitable for autoscale deployment
-- **Font**: Tajawal (Google Fonts) for Arabic support
-- **Icons**: Inline SVG with brand-specific styling
+## التفاصيل التقنية
+- **اللغة**: HTML/CSS/JavaScript نقي (بدون إطار عمل)
+- **تخزين البيانات**: Supabase PostgreSQL
+- **الخادم**: خادم HTTP مع Python على المنفذ 5000
+- **النشر**: موقع ثابت مناسب للنشر التلقائي
+- **الخط**: Tajawal (Google Fonts) لدعم اللغة العربية
+- **الأيقونات**: SVG مضمنة مع تصميم خاص بالعلامة التجارية
 
-## Services & Pricing
-- Haircut + Beard trim: 1200 DZD (special offer)
-- Traditional shave: 800 DZD
-- Hair coloring: from 1000 DZD
-- Kids haircut: 500 DZD
-- Family package: 1360 DZD (20% discount)
-- Hair care treatment: 600 DZD
-- Plus additional services
+## الخدمات والأسعار
+- قصة شعر + تشذيب لحية: 1200 دج (عرض خاص)
+- حلاقة تقليدية: 800 دج
+- صبغة شعر: من 1000 دج
+- قصة شعر أطفال: 500 دج
+- باقة عائلية: 1360 دج (خصم 20%)
+- علاج العناية بالشعر: 600 دج
+- بالإضافة إلى خدمات إضافية
 
-## Booking Capacity
-- Sunday-Tuesday: 3 bookings per day
-- Friday-Saturday: 5 bookings per day
-- Wednesday-Thursday: 1000 bookings (essentially unlimited)
+## سعة الحجز
+- الأحد-الثلاثاء: 3 حجوزات يومياً
+- الجمعة-السبت: 5 حجوزات يومياً
+- الأربعاء-الخميس: 1000 حجز (غير محدود عملياً)
 
-## Recent Changes
-- 2025-10-20: Initial setup in Replit environment
-  - Added Python HTTP server with cache control
-  - Configured workflow for serving on port 5000
-  - Set up deployment configuration for autoscale
+## إعداد Supabase
+
+### الخطوة 1: إنشاء قاعدة البيانات
+1. افتح لوحة تحكم Supabase الخاصة بك
+2. اذهب إلى **SQL Editor**
+3. انسخ محتوى ملف `supabase-setup.sql`
+4. الصق في المحرر واضغط **Run**
+
+### الخطوة 2: التحقق من الإعداد
+- تحقق من إنشاء جدول `bookings`
+- تحقق من إنشاء جدول `announcements`
+- تحقق من تفعيل Row Level Security
+- تحقق من إنشاء السياسات الأمنية
+
+### الخطوة 3: اختبار الموقع
+1. افتح الصفحة الرئيسية
+2. جرب إنشاء حجز
+3. افتح لوحة الإدارة (كلمة المرور: admin123)
+4. تحقق من ظهور الحجوزات
+5. جرب إضافة إعلان
+
+راجع ملف `SUPABASE_SETUP.md` للحصول على تعليمات مفصلة.
+
+## التغييرات الأخيرة
+- 2025-10-20: **تكامل Supabase الكامل**
+  - استبدال localStorage بقاعدة بيانات Supabase
+  - إنشاء جداول bookings و announcements
+  - تحديث جميع ملفات JavaScript للعمل مع Supabase
+  - إضافة نقطة نهاية API في server.py للإعدادات
+  - تحديث ملفات HTML لتحميل مكتبة Supabase
+  - إنشاء ملفات الإعداد والتوثيق
+  - تخزين موثوق وآمن في السحابة
+  - دعم متعدد المستخدمين
+
+- 2025-10-20: **ترقية تصميم القائمة الجانبية**
+  - تصميم جديد بتدرجات وتأثيرات حديثة
+  - رسوم متحركة محسنة للروابط والأيقونات
+  - شعار متوهج بحركة ديناميكية
+  - حدود وظلال محسنة
+  - مؤشر نشط بتأثير توهج
+  - تحسينات في الألوان والمسافات
+
+- 2025-10-20: الإعداد الأولي في بيئة Replit
+  - إضافة خادم HTTP مع Python مع التحكم في ذاكرة التخزين المؤقت
+  - تكوين سير العمل للتشغيل على المنفذ 5000
+  - إعداد تكوين النشر للنشر التلقائي
   
-- 2025-10-20: Premium CSS Upgrade
-  - Enhanced color schemes and gradients
-  - Added smooth animations and transitions
-  - Implemented glassmorphism effects
-  - Improved shadows, borders, and lighting
-  - Created premium hover states and micro-interactions
-  - Optimized for readability and accessibility
-  - Added responsive design improvements
-  - Integrated Google Fonts (Tajawal) for better typography
+- 2025-10-20: ترقية CSS الاحترافية
+  - تحسين أنظمة الألوان والتدرجات
+  - إضافة رسوم متحركة وانتقالات سلسة
+  - تطبيق تأثيرات زجاجية
+  - تحسين الظلال والحدود والإضاءة
+  - إنشاء حالات تحويم احترافية وتفاعلات دقيقة
+  - تحسين للقراءة وسهولة الوصول
+  - إضافة تحسينات التصميم المتجاوب
+  - دمج Google Fonts (Tajawal) لطباعة أفضل
 
-- 2025-10-20: Social Media Icons Enhancement
-  - Replaced emoji icons with professional SVG icons
-  - Added branded gradient backgrounds for each platform
-  - Implemented smooth hover animations with scale and glow
-  - Added drop shadows for better contrast
-  - Icons work perfectly in both header and footer
-  - Maintained WhatsApp link functionality
+- 2025-10-20: تحسين أيقونات وسائل التواصل الاجتماعي
+  - استبدال أيقونات الإيموجي بأيقونات SVG احترافية
+  - إضافة خلفيات تدرج بألوان العلامات التجارية لكل منصة
+  - تطبيق رسوم متحركة تحويم سلسة مع تكبير وتوهج
+  - إضافة ظلال لتباين أفضل
+  - الأيقونات تعمل بشكل مثالي في الرأس والتذييل
+  - الحفاظ على وظيفة رابط واتساب
 
-- 2025-10-20: Ads Page Implementation
-  - Created dedicated ads/promotions page (ads.html)
-  - Implemented responsive grid layout for service cards
-  - Added featured cards with gradient borders
-  - Created service badges for special offers and new items
-  - Designed pricing display with strikethrough old prices
-  - Added services list with pricing
-  - Implemented staggered fade-in animations
-  - Added navigation links across all pages
-  - Fixed mobile responsiveness with media queries
-  - Ensured no horizontal scrolling on small screens
+- 2025-10-20: تطبيق صفحة العروض
+  - إنشاء صفحة عروض/عروض خاصة مخصصة (ads.html)
+  - تطبيق تخطيط شبكة متجاوب لبطاقات الخدمات
+  - إضافة بطاقات مميزة بحدود تدرج
+  - إنشاء شارات الخدمات للعروض الخاصة والعناصر الجديدة
+  - تصميم عرض الأسعار مع شطب الأسعار القديمة
+  - إضافة قائمة الخدمات مع الأسعار
+  - تطبيق رسوم متحركة تدرجية للظهور
+  - إضافة روابط التنقل عبر جميع الصفحات
+  - إصلاح استجابة الهاتف المحمول مع استعلامات الوسائط
+  - ضمان عدم التمرير الأفقي على الشاشات الصغيرة
+
+## تفضيلات المستخدم
+- اللغة: العربية
+- التصميم: عصري واحترافي
+- قاعدة البيانات: Supabase
+- نظام الألوان: داكن مع تدرجات ذهبية ومرجانية
