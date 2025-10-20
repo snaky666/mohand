@@ -11,20 +11,28 @@ function renderAdmin(){
   const list = loadBookings();
   const container = document.getElementById("adminList");
   if(!list.length){ container.innerHTML = "<div class='muted'>لا توجد حجوزات.</div>"; return; }
+  
+  // ترتيب حسب التاريخ
+  const sortedList = [...list].sort((a, b) => a.dateStr.localeCompare(b.dateStr));
+  
   let html = "<div class='list'>";
-  list.forEach((b, idx)=>{
-    html += `<div class="slot"><div><div class="name">${escapeHtml(b.name)}</div><div class="meta">${b.day} • ${b.phone}</div></div><div><button class="btn" data-idx="${idx}" data-id="${b.id}">حذف</button></div></div>`;
+  sortedList.forEach((b, idx)=>{
+    const dateObj = new Date(b.dateStr + 'T00:00:00');
+    const displayDate = `${b.dayName} - ${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
+    
+    html += `<div class="slot"><div><div class="name">${escapeHtml(b.name)}</div><div class="meta">${displayDate} • ${b.phone}</div></div><div><button class="btn" data-id="${b.id}">حذف</button></div></div>`;
   });
   html += "</div>";
   container.innerHTML = html;
+  
   // attach delete
-  container.querySelectorAll("button[data-idx]").forEach(btn=>{
+  container.querySelectorAll("button[data-id]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
-      const idx = Number(btn.dataset.idx);
+      const id = btn.dataset.id;
       if(!confirm("هل تريد حذف هذا الحجز؟")) return;
       const cur = loadBookings();
-      cur.splice(idx,1);
-      saveBookings(cur);
+      const filtered = cur.filter(b => b.id !== id);
+      saveBookings(filtered);
       renderAdmin();
     });
   });
