@@ -2,15 +2,14 @@
 const TOTAL_DAYS = 15;
 const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
-// استخدام الـ client المشترك من supabase-config.js
+// استخدام إعدادات Supabase من ملف supabase-config.js
 let supabaseClient = null;
 
-function initSupabaseForMain() {
+function initSupabase() {
   try {
-    // استخدام الـ client المشترك من supabase-config.js
-    supabaseClient = initSupabase();
-    if (supabaseClient) {
-      console.log('✅ Main.js using shared Supabase client');
+    // استخدام الإعدادات من supabase-config.js
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       return true;
     }
     return false;
@@ -367,12 +366,7 @@ function setupSidebar() {
 }
 
 async function initApp() {
-  const initialized = initSupabaseForMain();
-  
-  if (!initialized) {
-    console.error('❌ Failed to initialize Supabase in main.js');
-    return;
-  } = initSupabase();
+  const initialized = initSupabase();
   if (!initialized) {
     showMessage("فشل الاتصال بقاعدة البيانات. يرجى المحاولة لاحقاً.", "error");
     return;

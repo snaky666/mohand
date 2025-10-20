@@ -2,16 +2,9 @@
 const ADMIN_PASSWORD = 'admin123'; // ⚠️ غيّر هذا!
 const PRICE_PER_BOOKING = 500;
 
-// استخدام الـ Admin client المشترك من supabase-config.js
-let supabaseAdmin = null;
-
-// تهيئة Admin client عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-  supabaseAdmin = initSupabaseAdmin();
-  if (!supabaseAdmin) {
-    console.error('❌ Failed to initialize Supabase Admin client');
-  }
-});
+// Supabase Admin Client (يستخدم service role key)
+const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaXJqenN6aHhncWVjZGludW90Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk2OTQ0OSwiZXhwIjoyMDc2NTQ1NDQ5fQ.hgO_aBKdVkQCNx8mlGF_c34fPPZCewL5xEiRNe_BRig';
+const supabaseAdmin = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 let currentPassword = '';
 
@@ -77,18 +70,8 @@ async function loadBookings() {
     const tableBody = document.getElementById('bookingsTable');
     
     try {
-        // التأكد من تهيئة الـ client
-        if (!supabaseAdmin) {
-            supabaseAdmin = initSupabaseAdmin();
-        }
-        
         if (!supabaseAdmin) {
             throw new Error('Supabase admin client not initialized');
-        }
-
-        if (!tableBody) {
-            console.error('❌ Table body element not found');
-            return;
         }
 
         tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">جارٍ التحميل...</td></tr>';
