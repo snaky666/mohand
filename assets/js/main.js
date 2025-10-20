@@ -1,11 +1,27 @@
 // main.js - مدير الحجز بالـ LocalStorage
-const DAILY_CAPACITY = 5; // سعة الحجز اليومية
 const TOTAL_DAYS = 15; // عدد الأيام المتاحة للحجز
 
 const STORAGE_KEY = "barber_bookings_v1";
 const ANN_KEY = "barber_announcement_v1";
 
 const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+// دالة للحصول على سعة الحجز حسب اليوم
+function getDailyCapacity(date) {
+  const dayOfWeek = date.getDay();
+  // الأحد=0، الإثنين=1، الثلاثاء=2، الأربعاء=3، الخميس=4، الجمعة=5، السبت=6
+  // أيام العمل: الأحد، الإثنين، الثلاثاء، الخميس = 3 أشخاص
+  // الجمعة والسبت = 5 أشخاص
+  // الأربعاء = مغلق (0 أشخاص)
+  if (dayOfWeek === 3) { // الأربعاء
+    return 0; // مغلق
+  } else if (dayOfWeek === 5 || dayOfWeek === 6) { // الجمعة أو السبت
+    return 5;
+  } else if (dayOfWeek === 0 || dayOfWeek === 1 || dayOfWeek === 2 || dayOfWeek === 4) { // الأحد، الإثنين، الثلاثاء، الخميس
+    return 3;
+  }
+  return 0;
+}
 
 function loadBookings() {
   try {
@@ -47,10 +63,16 @@ function getAvailableDates() {
   for (let i = 0; i < TOTAL_DAYS; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
+    const capacity = getDailyCapacity(date);
+    
+    // تخطي الأيام المغلقة (الأربعاء)
+    if (capacity === 0) continue;
+    
     dates.push({
       dateStr: getDateString(date),
       dayName: getArabicDayName(date),
-      displayText: `${getArabicDayName(date)} - ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+      displayText: `${getArabicDayName(date)} - ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
+      capacity: capacity
     });
   }
   
@@ -106,10 +128,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // Show announcement if set
   const ann = loadAnnouncement();
   const announcementEl = document.getElementById("announcement");
-  const announcementTextEl = document.getElementById("announcementText");
-  if (ann.trim() && announcementEl && announcementTextEl) {
+  if (ann.trim() && announcementEl) {
     announcementEl.style.display = "block";
-    announcementTextEl.textContent = ann;
+    announcementEl.textContent = ann;
   }
 
   const form = document.getElementById("bookingForm");
@@ -122,10 +143,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
     daySelect.innerHTML = '<option value="">اختر التاريخ</option>';
     availableDates.forEach(date => {
       const current = countForDate(date.dateStr);
-      const isFull = current >= DAILY_CAPACITY;
+      const isFull = current >= date.capacity;
       const option = document.createElement('option');
       option.value = date.dateStr;
-      option.textContent = date.displayText + (isFull ? ' (ممتلئ)' : ` (${DAILY_CAPACITY - current} متاح)`);
+      option.textContent = date.displayText + (isFull ? ' (ممتلئ)' : ` (${date.capacity - current} متاح)`);
       option.disabled = isFull;
       daySelect.appendChild(option);
     });
@@ -142,15 +163,21 @@ document.addEventListener("DOMContentLoaded", ()=>{
       return;
     }
 
+    // الحصول على اسم اليوم والسعة
+    const dateObj = new Date(dateStr + 'T00:00:00');
+    const dayName = getArabicDayName(dateObj);
+    const dailyCapacity = getDailyCapacity(dateObj);
+    
+    if (dailyCapacity === 0) {
+      msg.textContent = `عذراً، هذا اليوم مغلق.`;
+      return;
+    }
+    
     const current = countForDate(dateStr);
-    if(current >= DAILY_CAPACITY){
+    if(current >= dailyCapacity){
       msg.textContent = `عذراً، تم امتلاء حجوزات هذا اليوم.`;
       return;
     }
-
-    // الحصول على اسم اليوم
-    const dateObj = new Date(dateStr + 'T00:00:00');
-    const dayName = getArabicDayName(dateObj);
 
     // إنشاء الحجز
     const id = 'BK' + Date.now().toString().slice(-6);
@@ -175,10 +202,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
       daySelect.innerHTML = '<option value="">اختر التاريخ</option>';
       availableDates.forEach(date => {
         const current = countForDate(date.dateStr);
-        const isFull = current >= DAILY_CAPACITY;
+        const isFull = current >= date.capacity;
         const option = document.createElement('option');
         option.value = date.dateStr;
-        option.textContent = date.displayText + (isFull ? ' (ممتلئ)' : ` (${DAILY_CAPACITY - current} متاح)`);
+        option.textContent = date.displayText + (isFull ? ' (ممتلئ)' : ` (${date.capacity - current} متاح)`);
         option.disabled = isFull;
         daySelect.appendChild(option);
       });
