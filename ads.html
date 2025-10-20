@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ⵎⵓⵃⵎⵎⴷ barber — حجز موعد</title>
+  <title>العروض والإعلانات — ⵎⵓⵃⵎⵎⴷ barber</title>
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="logo">ⵎⵓⵃⵎⵎⴷ <span class="small">barber</span></div>
     <nav class="socials">
-      <a href="ads.html" class="btn ghost">العروض</a>
+      <a href="index.html" class="btn ghost">الرئيسية</a>
       <a href="#" title="واتساب" id="waLink" class="social-icon whatsapp">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -31,46 +31,100 @@
 
   <main class="container">
     <section class="hero">
-      <h1>احجز موعدك بسرعة</h1>
-      <p class="lead">اختر اليوم، اكتب اسمك ورقم هاتفك — لا حاجة للدفع.</p>
-      <div id="announcement" class="announcement"></div>
+      <h1>✨ العروض والإعلانات</h1>
+      <p class="lead">اكتشف أحدث عروضنا وخدماتنا المميزة</p>
     </section>
 
-    <section class="card booking">
-      <h2>نموذج الحجز</h2>
-      <form id="bookingForm" autocomplete="off">
-        <label>الاسم
-          <input type="text" id="name" required placeholder="اسمك" />
-        </label>
+    <div class="ads-grid" id="adsGrid">
+      <div class="ad-card featured">
+        <div class="ad-badge">عرض خاص</div>
+        <div class="ad-icon">✂️</div>
+        <h3>قصة شعر + تشذيب لحية</h3>
+        <p class="ad-description">احصل على قصة شعر احترافية مع تشذيب وتهذيب اللحية بسعر مخفض</p>
+        <div class="ad-price">
+          <span class="old-price">1500 دج</span>
+          <span class="new-price">1200 دج</span>
+        </div>
+        <div class="ad-validity">صالح حتى نهاية الشهر</div>
+      </div>
 
-        <label>اليوم
-          <select id="day" required>
-            <option value="">اختر اليوم</option>
-            <option value="الأحد">الأحد</option>
-            <option value="الإثنين">الإثنين</option>
-            <option value="الثلاثاء">الثلاثاء</option>
-            <option value="الأربعاء">الأربعاء</option>
-            <option value="الخميس">الخميس</option>
-            <option value="الجمعة">الجمعة</option>
-            <option value="السبت">السبت</option>
-          </select>
-        </label>
+      <div class="ad-card">
+        <div class="ad-badge new">جديد</div>
+        <div class="ad-icon">💈</div>
+        <h3>الحلاقة التقليدية</h3>
+        <p class="ad-description">تجربة حلاقة كلاسيكية بالموس مع مناشف ساخنة ومستحضرات فاخرة</p>
+        <div class="ad-price">
+          <span class="new-price">800 دج</span>
+        </div>
+        <div class="ad-validity">متوفر يومياً</div>
+      </div>
 
-        <label>الهاتف
-          <input type="tel" id="phone" required placeholder="05xxxxxxxx" pattern="[0-9+\s\-]{6,}" />
-        </label>
+      <div class="ad-card">
+        <div class="ad-icon">🎨</div>
+        <h3>صبغة الشعر</h3>
+        <p class="ad-description">صبغات عالية الجودة بألوان متنوعة مع ضمان النتيجة</p>
+        <div class="ad-price">
+          <span class="new-price">من 1000 دج</span>
+        </div>
+        <div class="ad-validity">حسب الطول واللون</div>
+      </div>
 
-        <div class="note">سعة الحجز: الأحد - الإثنين - الثلاثاء: 3 أشخاص | الجمعة - السبت: 5 أشخاص</div>
+      <div class="ad-card">
+        <div class="ad-icon">👶</div>
+        <h3>قصة أطفال</h3>
+        <p class="ad-description">قصات مخصصة للأطفال في جو مريح ومرح</p>
+        <div class="ad-price">
+          <span class="new-price">500 دج</span>
+        </div>
+        <div class="ad-validity">من سن 3 إلى 12 سنة</div>
+      </div>
 
-        <button type="submit" class="btn">احجز الآن</button>
-      </form>
+      <div class="ad-card featured">
+        <div class="ad-badge">عرض العائلة</div>
+        <div class="ad-icon">👨‍👦</div>
+        <h3>باقة العائلة</h3>
+        <p class="ad-description">قصة لك ولطفلك مع خصم 20% - قضاء وقت ممتع مع العائلة</p>
+        <div class="ad-price">
+          <span class="old-price">1700 دج</span>
+          <span class="new-price">1360 دج</span>
+        </div>
+        <div class="ad-validity">طوال الأسبوع</div>
+      </div>
 
-      <div id="message" role="status" aria-live="polite"></div>
-    </section>
+      <div class="ad-card">
+        <div class="ad-icon">🧴</div>
+        <h3>العناية بالشعر</h3>
+        <p class="ad-description">علاجات خاصة للشعر - ترطيب، تغذية، وتقوية</p>
+        <div class="ad-price">
+          <span class="new-price">600 دج</span>
+        </div>
+        <div class="ad-validity">جلسة واحدة</div>
+      </div>
+    </div>
 
-    <section class="card list">
-      <h2>الحجوزات القادمة</h2>
-      <div id="bookingsList">لا توجد حجوزات بعد.</div>
+    <section class="card" style="margin-top: 32px;">
+      <h2>📋 خدمات إضافية</h2>
+      <div class="services-list">
+        <div class="service-item">
+          <span class="service-name">تصفيف الشعر للمناسبات</span>
+          <span class="service-price">1500 دج</span>
+        </div>
+        <div class="service-item">
+          <span class="service-name">تنظيف البشرة</span>
+          <span class="service-price">700 دج</span>
+        </div>
+        <div class="service-item">
+          <span class="service-name">حلاقة الأنف والأذن</span>
+          <span class="service-price">300 دج</span>
+        </div>
+        <div class="service-item">
+          <span class="service-name">مساج الرأس</span>
+          <span class="service-price">400 دج</span>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="index.html" class="btn">احجز موعدك الآن</a>
+      </div>
     </section>
   </main>
 

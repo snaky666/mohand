@@ -591,6 +591,175 @@ textarea {
   }
 }
 
+/* Ads Page Styles */
+.ads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 480px) {
+  .ads-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.ad-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  padding: 28px;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.ad-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-coral), var(--accent-purple));
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.ad-card:hover::before {
+  opacity: 1;
+}
+
+.ad-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 209, 102, 0.4);
+  box-shadow: 0 16px 48px rgba(255, 209, 102, 0.2);
+}
+
+.ad-card.featured {
+  border-color: rgba(255, 209, 102, 0.4);
+  background: linear-gradient(135deg, rgba(255, 209, 102, 0.1), rgba(167, 139, 250, 0.08));
+}
+
+.ad-card.featured::before {
+  opacity: 1;
+}
+
+.ad-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-coral));
+  color: #000;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(255, 209, 102, 0.4);
+}
+
+.ad-badge.new {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-coral));
+}
+
+.ad-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 8px rgba(255, 209, 102, 0.3));
+}
+
+.ad-card h3 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.ad-description {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.6;
+  min-height: 60px;
+}
+
+.ad-price {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.old-price {
+  font-size: 16px;
+  color: var(--text-muted);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.new-price {
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-coral));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(255, 209, 102, 0.3));
+}
+
+.ad-validity {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* Services List */
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: var(--transition-smooth);
+}
+
+.service-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 209, 102, 0.3);
+  transform: translateX(-4px);
+}
+
+.service-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.service-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent-gold);
+}
+
 /* Smooth Animations */
 @keyframes fadeIn {
   from {
@@ -603,6 +772,20 @@ textarea {
   }
 }
 
-.card, .hero, .announcement {
+.card, .hero, .announcement, .ad-card {
   animation: fadeIn 0.6s ease-out;
+}
+
+.ad-card:nth-child(1) { animation-delay: 0.1s; }
+.ad-card:nth-child(2) { animation-delay: 0.2s; }
+.ad-card:nth-child(3) { animation-delay: 0.3s; }
+.ad-card:nth-child(4) { animation-delay: 0.4s; }
+.ad-card:nth-child(5) { animation-delay: 0.5s; }
+.ad-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Navbar Button Styles */
+nav .btn.ghost {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 14px;
 }
