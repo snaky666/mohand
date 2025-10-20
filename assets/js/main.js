@@ -100,16 +100,41 @@ function getArabicDayName(date) {
   return DAYS_AR[date.getDay()];
 }
 
-async function getAvailableDates() {
+// تخزين مؤقت للبيانات
+let cachedDates = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 30000; // 30 ثانية
+
+async function getAvailableDates(forceRefresh = false) {
+  // استخدام البيانات المخزنة مؤقتاً إذا كانت حديثة
+  const now = Date.now();
+  if (!forceRefresh && cachedDates && (now - cacheTimestamp) < CACHE_DURATION) {
+    return cachedDates;
+  }
+
   const dates = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // جلب جميع الحجوزات مرة واحدة بدلاً من استدعاءات متعددة
+  let allBookings = [];
+  try {
+    const data = await loadBookings();
+    allBookings = data;
+  } catch (e) {
+    console.error('Error loading bookings for dates:', e);
+  }
+
+  // حساب عدد الحجوزات لكل يوم
+  const bookingsByDate = {};
+  allBookings.forEach(booking => {
+    bookingsByDate[booking.dateStr] = (bookingsByDate[booking.dateStr] || 0) + 1;
+  });
+
   let daysAdded = 0;
   let offset = 0;
-  const MAX_SEARCH_DAYS = 60; // نبحث في 60 يومًا كحد أقصى لإيجاد 15 يومًا متاحًا
+  const MAX_SEARCH_DAYS = 60;
 
-  // نضيف 15 يومًا متاحًا (غير ممتلئة وغير أيام الأربعاء)
   while (daysAdded < TOTAL_DAYS && offset < MAX_SEARCH_DAYS) {
     const date = new Date(today);
     date.setDate(today.getDate() + offset);
@@ -117,10 +142,9 @@ async function getAvailableDates() {
 
     if (capacity > 0) {
       const dateStr = getDateString(date);
-      const booked = await countForDate(dateStr);
+      const booked = bookingsByDate[dateStr] || 0;
       const available = capacity - booked;
 
-      // نضيف اليوم فقط إذا كان متاحًا (ليس ممتلئًا)
       if (available > 0) {
         dates.push({
           dateStr: dateStr,
@@ -135,6 +159,10 @@ async function getAvailableDates() {
     
     offset++;
   }
+
+  // تخزين النتائج
+  cachedDates = dates;
+  cacheTimestamp = now;
 
   return dates;
 }
@@ -244,25 +272,36 @@ async function handleBookingSubmit(e) {
     return;
   }
 
-  const dates = await getAvailableDates();
+  // استخدام البيانات المخزنة مؤقتاً للتحقق السريع
+  const dates = await getAvailableDates(false);
   const chosen = dates.find(d => d.dateStr === day);
   if (!chosen) {
     showMessage("التاريخ غير صالح", "error");
     return;
   }
 
-  if (chosen.available <= 0) {
-    showMessage("عذراً، هذا اليوم ممتلئ", "error");
-    return;
-  }
-
   try {
+    // التحقق النهائي من التوافر قبل الحفظ
+    const currentBooked = await countForDate(day);
+    const dateObj = new Date(day + 'T00:00:00');
+    const capacity = getDailyCapacity(dateObj);
+    
+    if (currentBooked >= capacity) {
+      showMessage("عذراً، هذا اليوم ممتلئ", "error");
+      await populateDaySelect(); // تحديث القائمة
+      return;
+    }
+
     await saveBooking({ name, phone, dateStr: day, dayName: chosen.dayName });
     showMessage("✅ تم الحجز بنجاح! سنتواصل معك قريباً.", "success");
     document.getElementById("bookingForm").reset();
+    
+    // إعادة تحميل البيانات
+    cachedDates = null; // مسح الذاكرة المؤقتة
     await populateDaySelect();
     await renderBookings();
   } catch (error) {
+    console.error('Booking error:', error);
     showMessage("حدث خطأ أثناء الحجز. حاول مرة أخرى.", "error");
   }
 }

@@ -74,23 +74,34 @@ async function loadBookings() {
             .order('day', { ascending: true })
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase error:', error);
+            throw error;
+        }
 
         const tableBody = document.getElementById('bookingsTable');
+        if (!tableBody) {
+            console.error('Table body element not found');
+            return;
+        }
+
         tableBody.innerHTML = '';
 
-        if (bookings.length === 0) {
+        if (!bookings || bookings.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">لا توجد حجوزات</td></tr>';
             return;
         }
 
         bookings.forEach(booking => {
             const row = document.createElement('tr');
+            const bookingDate = new Date(booking.day + 'T00:00:00');
+            const createdDate = new Date(booking.created_at);
+            
             row.innerHTML = `
-                <td>${booking.name}</td>
-                <td>${booking.phone}</td>
-                <td>${new Date(booking.day).toLocaleDateString('ar-DZ')}</td>
-                <td>${new Date(booking.created_at).toLocaleString('ar-DZ')}</td>
+                <td>${escapeHtml(booking.name)}</td>
+                <td>${escapeHtml(booking.phone)}</td>
+                <td>${bookingDate.getDate()}/${bookingDate.getMonth() + 1}/${bookingDate.getFullYear()}</td>
+                <td>${createdDate.getDate()}/${createdDate.getMonth() + 1}/${createdDate.getFullYear()} ${createdDate.getHours()}:${String(createdDate.getMinutes()).padStart(2, '0')}</td>
                 <td>
                     <button class="delete-btn" onclick="deleteBooking('${booking.id}')">
                         🗑️ حذف
@@ -101,7 +112,17 @@ async function loadBookings() {
         });
     } catch (error) {
         console.error('Error loading bookings:', error);
+        const tableBody = document.getElementById('bookingsTable');
+        if (tableBody) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color: #ff7b7b;">خطأ في تحميل الحجوزات</td></tr>';
+        }
     }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // حذف حجز
