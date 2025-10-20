@@ -216,14 +216,26 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
   renderBookings();
 
-  // social whatsapp links (example opens chat)
+  // social whatsapp links
   const waLink = document.getElementById("waLink");
   const waFooter = document.getElementById("whatsappFooter");
   const waSidebar = document.getElementById("waSidebar");
-  const phoneForWA = "213555123456"; // ضع رقم الصالون هنا إن أردت
+  const phoneForWA = "213794445199";
   if (waLink) waLink.href = `https://wa.me/${phoneForWA}`;
   if (waFooter) waFooter.href = `https://wa.me/${phoneForWA}`;
   if (waSidebar) waSidebar.href = `https://wa.me/${phoneForWA}`;
+
+  // social media links
+  const instagramLinks = document.querySelectorAll(".social-icon.instagram");
+  const facebookLinks = document.querySelectorAll(".social-icon.facebook");
+  
+  instagramLinks.forEach(link => {
+    link.href = "https://www.instagram.com/al_one__x?igsh=NGpnamxhM2I0NHc0";
+  });
+  
+  facebookLinks.forEach(link => {
+    link.href = "https://www.facebook.com/share/1AAvRDDstf/";
+  });
 
   // Sidebar menu toggle
   const menuToggle = document.getElementById("menuToggle");
