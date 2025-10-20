@@ -102,7 +102,41 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // social whatsapp links (example opens chat)
   const waLink = document.getElementById("waLink");
   const waFooter = document.getElementById("whatsappFooter");
+  const waSidebar = document.getElementById("waSidebar");
   const phoneForWA = "213555123456"; // ضع رقم الصالون هنا إن أردت
-  waLink.href = `https://wa.me/${phoneForWA}`;
-  waFooter.href = `https://wa.me/${phoneForWA}`;
+  if (waLink) waLink.href = `https://wa.me/${phoneForWA}`;
+  if (waFooter) waFooter.href = `https://wa.me/${phoneForWA}`;
+  if (waSidebar) waSidebar.href = `https://wa.me/${phoneForWA}`;
+
+  // Sidebar menu toggle
+  const menuToggle = document.getElementById("menuToggle");
+  const sidebar = document.getElementById("sidebar");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+  if (menuToggle && sidebar && sidebarOverlay) {
+    menuToggle.addEventListener("click", () => {
+      menuToggle.classList.toggle("active");
+      sidebar.classList.toggle("active");
+      sidebarOverlay.classList.toggle("active");
+      document.body.style.overflow = sidebar.classList.contains("active") ? "hidden" : "";
+    });
+
+    sidebarOverlay.addEventListener("click", () => {
+      menuToggle.classList.remove("active");
+      sidebar.classList.remove("active");
+      sidebarOverlay.classList.remove("active");
+      document.body.style.overflow = "";
+    });
+
+    // Close sidebar on navigation
+    const sidebarLinks = sidebar.querySelectorAll("a");
+    sidebarLinks.forEach(link => {
+      link.addEventListener("click", () => {
+        menuToggle.classList.remove("active");
+        sidebar.classList.remove("active");
+        sidebarOverlay.classList.remove("active");
+        document.body.style.overflow = "";
+      });
+    });
+  }
 });
