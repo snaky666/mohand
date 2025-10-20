@@ -59,15 +59,15 @@ function getAvailableDates() {
   const dates = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   for (let i = 0; i < TOTAL_DAYS; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     const capacity = getDailyCapacity(date);
-    
+
     // تخطي الأيام المغلقة (الأربعاء)
     if (capacity === 0) continue;
-    
+
     dates.push({
       dateStr: getDateString(date),
       dayName: getArabicDayName(date),
@@ -75,7 +75,7 @@ function getAvailableDates() {
       capacity: capacity
     });
   }
-  
+
   return dates;
 }
 
@@ -100,20 +100,20 @@ function renderBookings(){
   const list = loadBookings();
   const container = document.getElementById("bookingsList");
   if(!list.length){ container.innerHTML = "<div class='muted'>لا توجد حجوزات بعد.</div>"; return; }
-  
+
   // ترتيب حسب التاريخ
   const byDate = {};
   list.forEach(b => { (byDate[b.dateStr] = byDate[b.dateStr]||[]).push(b); });
-  
+
   // ترتيب التواريخ
   const sortedDates = Object.keys(byDate).sort();
-  
+
   let html = "";
   sortedDates.forEach(dateStr => {
     const bookings = byDate[dateStr];
     const dateObj = new Date(dateStr + 'T00:00:00');
     const displayDate = `${bookings[0].dayName} - ${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
-    
+
     html += `<h3 style="margin-top:8px">${displayDate} — ${bookings.length} حجز</h3>`;
     bookings.forEach(b=>{
       html += `<div class="slot"><div><div class="name">${escapeHtml(b.name)}</div><div class="meta">${b.phone}</div></div><div class="meta">${b.id}</div></div>`;
@@ -127,10 +127,10 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','
 document.addEventListener("DOMContentLoaded", ()=>{
   // Show announcement if set
   const ann = loadAnnouncement();
-  const announcementEl = document.getElementById("announcement");
-  if (ann.trim() && announcementEl) {
-    announcementEl.style.display = "block";
-    announcementEl.textContent = ann;
+  const annElement = document.getElementById("announcementText");
+  if(ann.trim() && annElement){
+    document.getElementById("announcement").style.display = "block";
+    annElement.textContent = ann;
   }
 
   const form = document.getElementById("bookingForm");
@@ -167,12 +167,12 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const dateObj = new Date(dateStr + 'T00:00:00');
     const dayName = getArabicDayName(dateObj);
     const dailyCapacity = getDailyCapacity(dateObj);
-    
+
     if (dailyCapacity === 0) {
       msg.textContent = `عذراً، هذا اليوم مغلق.`;
       return;
     }
-    
+
     const current = countForDate(dateStr);
     if(current >= dailyCapacity){
       msg.textContent = `عذراً، تم امتلاء حجوزات هذا اليوم.`;
@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
     msg.textContent = `تم الحجز بنجاح — رقم الحجز: ${id}`;
     form.reset();
-    
+
     // تحديث القائمة المنسدلة
     if (daySelect) {
       const availableDates = getAvailableDates();
@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
         daySelect.appendChild(option);
       });
     }
-    
+
     renderBookings();
   });
 
@@ -228,11 +228,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // social media links
   const instagramLinks = document.querySelectorAll(".social-icon.instagram");
   const facebookLinks = document.querySelectorAll(".social-icon.facebook");
-  
+
   instagramLinks.forEach(link => {
     link.href = "https://www.instagram.com/al_one__x?igsh=NGpnamxhM2I0NHc0";
   });
-  
+
   facebookLinks.forEach(link => {
     link.href = "https://www.facebook.com/share/1AAvRDDstf/";
   });

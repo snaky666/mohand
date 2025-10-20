@@ -17,6 +17,31 @@
 
   <main class="container admin">
     <h1>لوحة الإدارة</h1>
+    
+    <!-- قسم الإحصائيات -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-label">إجمالي الحجوزات</div>
+        <div class="stat-value" id="totalBookings">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-label">الدخل الشهري</div>
+        <div class="stat-value" id="monthlyIncome">0 دج</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💎</div>
+        <div class="stat-label">الدخل السنوي</div>
+        <div class="stat-value" id="yearlyIncome">0 دج</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-label">حجوزات اليوم</div>
+        <div class="stat-value" id="todayBookings">0</div>
+      </div>
+    </div>
+
     <div class="card">
       <h2>إضافة إعلان (يظهر في الصفحة الرئيسية)</h2>
       <textarea id="announcementInput" rows="3" placeholder="أدخل نص الإعلان هنا..."></textarea>

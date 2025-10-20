@@ -7,9 +7,63 @@ function saveBookings(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(li
 function loadAnnouncement(){ return localStorage.getItem(ANN_KEY) || ""; }
 function saveAnnouncement(t){ localStorage.setItem(ANN_KEY, t); }
 
+function calculateStats(){
+  const list = loadBookings();
+  const PRICE_PER_BOOKING = 500; // سعر الحلاقة الواحدة (يمكن تعديله)
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
+  
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+  
+  let todayCount = 0;
+  let monthlyCount = 0;
+  let yearlyCount = 0;
+  
+  list.forEach(b => {
+    const bookingDate = new Date(b.dateStr + 'T00:00:00');
+    
+    // حجوزات اليوم
+    if(b.dateStr === todayStr){
+      todayCount++;
+    }
+    
+    // حجوزات الشهر
+    if(bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear){
+      monthlyCount++;
+    }
+    
+    // حجوزات السنة
+    if(bookingDate.getFullYear() === currentYear){
+      yearlyCount++;
+    }
+  });
+  
+  return {
+    total: list.length,
+    today: todayCount,
+    monthlyIncome: monthlyCount * PRICE_PER_BOOKING,
+    yearlyIncome: yearlyCount * PRICE_PER_BOOKING
+  };
+}
+
+function updateStats(){
+  const stats = calculateStats();
+  document.getElementById("totalBookings").textContent = stats.total;
+  document.getElementById("todayBookings").textContent = stats.today;
+  document.getElementById("monthlyIncome").textContent = stats.monthlyIncome.toLocaleString('ar-DZ') + " دج";
+  document.getElementById("yearlyIncome").textContent = stats.yearlyIncome.toLocaleString('ar-DZ') + " دج";
+}
+
 function renderAdmin(){
   const list = loadBookings();
   const container = document.getElementById("adminList");
+  
+  // تحديث الإحصائيات
+  updateStats();
+  
   if(!list.length){ container.innerHTML = "<div class='muted'>لا توجد حجوزات.</div>"; return; }
   
   // ترتيب حسب التاريخ
