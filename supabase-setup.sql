@@ -27,9 +27,12 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Allow public read access" ON bookings;
+DROP POLICY IF EXISTS "Allow public insert" ON bookings;
 DROP POLICY IF EXISTS "Enable read access for all users" ON bookings;
 DROP POLICY IF EXISTS "Enable insert access for all users" ON bookings;
 DROP POLICY IF EXISTS "Enable delete access for all users" ON bookings;
+DROP POLICY IF EXISTS "Allow public read access" ON announcements;
 DROP POLICY IF EXISTS "Enable read access for all users" ON announcements;
 DROP POLICY IF EXISTS "Enable insert/update access for all users" ON announcements;
 DROP POLICY IF EXISTS "Enable update access for all users" ON announcements;
