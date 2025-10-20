@@ -55,11 +55,13 @@ function renderBookings(){
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
 document.addEventListener("DOMContentLoaded", ()=>{
-  // show announcement
+  // Show announcement if set
   const ann = loadAnnouncement();
   const announcementEl = document.getElementById("announcement");
-  if (announcementEl) {
-    announcementEl.textContent = ann;
+  const announcementTextEl = document.getElementById("announcementText");
+  if (ann.trim() && announcementEl && announcementTextEl) {
+    announcementEl.style.display = "block";
+    announcementTextEl.textContent = ann;
   }
 
   const form = document.getElementById("bookingForm");
