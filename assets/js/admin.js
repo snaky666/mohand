@@ -105,22 +105,31 @@ async function loadBookings() {
 }
 
 // حذف حجز
-async function deleteBooking(bookingId) {
-    if (!confirm('هل أنت متأكد من حذف هذا الحجز؟')) return;
+async function deleteBooking(id) {
+    if (!confirm('هل أنت متأكد من حذف هذا الحجز؟')) {
+        return;
+    }
+
+    const password = prompt('أدخل كلمة مرور الإدارة:');
+    if (!password || password !== ADMIN_PASSWORD) {
+        showMessage('كلمة مرور خاطئة!', 'error');
+        return;
+    }
 
     try {
         const { error } = await supabaseAdmin
             .from('bookings')
             .delete()
-            .eq('id', bookingId);
+            .eq('id', id);
 
         if (error) throw error;
 
-        alert('تم حذف الحجز بنجاح!');
-        await loadDashboard();
+        showMessage('تم حذف الحجز بنجاح!', 'success');
+        loadBookings();
+        loadStatistics();
     } catch (error) {
         console.error('Error deleting booking:', error);
-        alert('حدث خطأ أثناء حذف الحجز');
+        showMessage('خطأ في حذف الحجز: ' + error.message, 'error');
     }
 }
 
@@ -191,3 +200,14 @@ setInterval(() => {
         loadDashboard();
     }
 }, 60000);
+
+// Helper function to display messages
+function showMessage(msg, type) {
+    const messageElement = document.getElementById('message');
+    messageElement.textContent = msg;
+    messageElement.className = type; // 'success' or 'error'
+    messageElement.style.display = 'block';
+    setTimeout(() => {
+        messageElement.style.display = 'none';
+    }, 3000);
+}
