@@ -57,7 +57,10 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','
 document.addEventListener("DOMContentLoaded", ()=>{
   // show announcement
   const ann = loadAnnouncement();
-  document.getElementById("announcement").textContent = ann;
+  const announcementEl = document.getElementById("announcement");
+  if (announcementEl) {
+    announcementEl.textContent = ann;
+  }
 
   const form = document.getElementById("bookingForm");
   const msg = document.getElementById("message");
