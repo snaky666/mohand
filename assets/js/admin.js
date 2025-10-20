@@ -1,263 +1,193 @@
-// admin.js - Supabase Admin Panel with Secure Server-Side Operations
-let supabase = null;
-let adminPassword = null;
+// admin.js - Supabase Admin Panel
+const ADMIN_PASSWORD = 'admin123'; // ⚠️ غيّر هذا!
+const PRICE_PER_BOOKING = 500;
 
-async function initSupabase() {
-  try {
-    const response = await fetch('/api/config');
-    const config = await response.json();
-    supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
-    return true;
-  } catch (error) {
-    console.error('Failed to initialize Supabase:', error);
-    return false;
-  }
+// Supabase Admin Client (يستخدم service role key)
+const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaXJqenN6aHhncWVjZGludW90Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk2OTQ0OSwiZXhwIjoyMDc2NTQ1NDQ5fQ.hgO_aBKdVkQCNx8mlGF_c34fPPZCewL5xEiRNe_BRig';
+const supabaseAdmin = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+let currentPassword = '';
+
+// تسجيل الدخول
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = document.getElementById('password').value;
+
+    if (password === ADMIN_PASSWORD) {
+        currentPassword = password;
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        await loadDashboard();
+    } else {
+        alert('كلمة مرور خاطئة!');
+    }
+});
+
+// تسجيل الخروج
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+    currentPassword = '';
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('password').value = '';
+});
+
+// تحميل لوحة التحكم
+async function loadDashboard() {
+    await Promise.all([
+        loadStatistics(),
+        loadBookings(),
+        loadAnnouncement()
+    ]);
 }
 
+// تحميل الإحصائيات
+async function loadStatistics() {
+    try {
+        const { data: bookings, error } = await supabaseAdmin
+            .from('bookings')
+            .select('*');
+
+        if (error) throw error;
+
+        const totalBookings = bookings.length;
+        const totalRevenue = totalBookings * PRICE_PER_BOOKING;
+
+        // حساب الحجوزات اليوم
+        const today = new Date().toISOString().split('T')[0];
+        const todayBookings = bookings.filter(b => b.day === today).length;
+
+        // تحديث الإحصائيات
+        document.getElementById('totalBookings').textContent = totalBookings;
+        document.getElementById('todayBookings').textContent = todayBookings;
+        document.getElementById('totalRevenue').textContent = `${totalRevenue} دج`;
+    } catch (error) {
+        console.error('Error loading statistics:', error);
+    }
+}
+
+// تحميل الحجوزات
 async function loadBookings() {
-  try {
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .order('day', { ascending: true });
-    
-    if (error) throw error;
-    
-    return data.map(booking => ({
-      id: booking.id,
-      idShort: booking.id.substring(0, 8),
-      name: booking.name,
-      phone: booking.phone,
-      dateStr: booking.day,
-      dayName: getArabicDayName(new Date(booking.day + 'T00:00:00'))
-    }));
-  } catch (e) {
-    console.error('Error loading bookings:', e);
-    return [];
-  }
-}
+    try {
+        const { data: bookings, error } = await supabaseAdmin
+            .from('bookings')
+            .select('*')
+            .order('day', { ascending: true })
+            .order('created_at', { ascending: false });
 
-async function deleteBooking(id) {
-  if (!adminPassword) {
-    throw new Error('No admin password stored');
-  }
-  
-  try {
-    const response = await fetch('/api/admin/delete-booking', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id, password: adminPassword })
-    });
-    
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to delete booking');
+        if (error) throw error;
+
+        const tableBody = document.getElementById('bookingsTable');
+        tableBody.innerHTML = '';
+
+        if (bookings.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">لا توجد حجوزات</td></tr>';
+            return;
+        }
+
+        bookings.forEach(booking => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${booking.name}</td>
+                <td>${booking.phone}</td>
+                <td>${new Date(booking.day).toLocaleDateString('ar-DZ')}</td>
+                <td>${new Date(booking.created_at).toLocaleString('ar-DZ')}</td>
+                <td>
+                    <button class="delete-btn" onclick="deleteBooking('${booking.id}')">
+                        🗑️ حذف
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error loading bookings:', error);
     }
-    
-    return true;
-  } catch (e) {
-    console.error('Error deleting booking:', e);
-    throw e;
-  }
 }
 
+// حذف حجز
+async function deleteBooking(bookingId) {
+    if (!confirm('هل أنت متأكد من حذف هذا الحجز؟')) return;
+
+    try {
+        const { error } = await supabaseAdmin
+            .from('bookings')
+            .delete()
+            .eq('id', bookingId);
+
+        if (error) throw error;
+
+        alert('تم حذف الحجز بنجاح!');
+        await loadDashboard();
+    } catch (error) {
+        console.error('Error deleting booking:', error);
+        alert('حدث خطأ أثناء حذف الحجز');
+    }
+}
+
+// تحميل الإعلان
 async function loadAnnouncement() {
-  try {
-    const { data, error } = await supabase
-      .from('announcements')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-    
-    if (error && error.code !== 'PGRST116') throw error;
-    return data || { id: null, message: "" };
-  } catch (e) {
-    console.error('Error loading announcement:', e);
-    return { id: null, message: "" };
-  }
-}
-
-async function saveAnnouncement(text) {
-  if (!adminPassword) {
-    throw new Error('No admin password stored');
-  }
-  
-  try {
-    const response = await fetch('/api/admin/update-announcement', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message: text, password: adminPassword })
-    });
-    
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to update announcement');
-    }
-    
-    return true;
-  } catch (e) {
-    console.error('Error saving announcement:', e);
-    throw e;
-  }
-}
-
-function getArabicDayName(date) {
-  const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-  return DAYS_AR[date.getDay()];
-}
-
-async function calculateStats() {
-  const list = await loadBookings();
-  const PRICE_PER_BOOKING = 500;
-  
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayStr = today.toISOString().split('T')[0];
-  
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
-  
-  let todayCount = 0;
-  let monthlyCount = 0;
-  let yearlyCount = 0;
-  
-  list.forEach(b => {
-    const bookingDate = new Date(b.dateStr + 'T00:00:00');
-    
-    if (b.dateStr === todayStr) {
-      todayCount++;
-    }
-    
-    if (bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear) {
-      monthlyCount++;
-    }
-    
-    if (bookingDate.getFullYear() === currentYear) {
-      yearlyCount++;
-    }
-  });
-  
-  return {
-    total: list.length,
-    today: todayCount,
-    monthlyIncome: monthlyCount * PRICE_PER_BOOKING,
-    yearlyIncome: yearlyCount * PRICE_PER_BOOKING
-  };
-}
-
-async function updateStats() {
-  const stats = await calculateStats();
-  document.getElementById("totalBookings").textContent = stats.total;
-  document.getElementById("todayBookings").textContent = stats.today;
-  document.getElementById("monthlyIncome").textContent = stats.monthlyIncome.toLocaleString('ar-DZ') + " دج";
-  document.getElementById("yearlyIncome").textContent = stats.yearlyIncome.toLocaleString('ar-DZ') + " دج";
-}
-
-async function renderAdmin() {
-  const list = await loadBookings();
-  const container = document.getElementById("adminList");
-  
-  await updateStats();
-  
-  if (!list.length) {
-    container.innerHTML = "<div class='muted'>لا توجد حجوزات.</div>";
-    return;
-  }
-  
-  const sortedList = [...list].sort((a, b) => a.dateStr.localeCompare(b.dateStr));
-  
-  let html = "<div class='list'>";
-  sortedList.forEach((b) => {
-    const dateObj = new Date(b.dateStr + 'T00:00:00');
-    const displayDate = `${b.dayName} - ${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
-    
-    html += `<div class="slot"><div><div class="name">${escapeHtml(b.name)}</div><div class="meta">${displayDate} • ${b.phone}</div></div><div><button class="btn" data-id="${b.id}">حذف</button></div></div>`;
-  });
-  html += "</div>";
-  container.innerHTML = html;
-  
-  container.querySelectorAll("button[data-id]").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const id = btn.dataset.id;
-      if (!confirm("هل تريد حذف هذا الحجز؟")) return;
-      
-      try {
-        await deleteBooking(id);
-        await renderAdmin();
-      } catch (error) {
-        alert("حدث خطأ أثناء الحذف: " + error.message);
-      }
-    });
-  });
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, m => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  }[m]));
-}
-
-async function initAdmin() {
-  const initialized = await initSupabase();
-  if (!initialized) {
-    alert("فشل الاتصال بقاعدة البيانات. يرجى المحاولة لاحقاً.");
-    return;
-  }
-
-  const pw = prompt("أدخل كلمة مرور المدير:");
-  if (!pw || pw.trim() === '') {
-    alert("كلمة المرور مطلوبة. سيتم توجيهك إلى الصفحة الرئيسية.");
-    window.location.href = "index.html";
-    return;
-  }
-
-  adminPassword = pw;
-
-  const announcement = await loadAnnouncement();
-  const annInput = document.getElementById("announcementInput");
-  annInput.value = announcement.message;
-
-  document.getElementById("saveAnn").addEventListener("click", async () => {
     try {
-      await saveAnnouncement(annInput.value.trim());
-      alert("تم نشر الإعلان.");
-    } catch (error) {
-      if (error.message.includes('Unauthorized')) {
-        alert("كلمة المرور خاطئة!");
-        adminPassword = null;
-        window.location.href = "admin.html";
-      } else {
-        alert("حدث خطأ أثناء النشر: " + error.message);
-      }
-    }
-  });
+        const { data: announcements, error } = await supabaseAdmin
+            .from('announcements')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-  document.getElementById("clearAnn").addEventListener("click", async () => {
-    annInput.value = "";
-    try {
-      await saveAnnouncement("");
-      alert("تم إزالة الإعلان.");
-    } catch (error) {
-      if (error.message.includes('Unauthorized')) {
-        alert("كلمة المرور خاطئة!");
-        adminPassword = null;
-        window.location.href = "admin.html";
-      } else {
-        alert("حدث خطأ: " + error.message);
-      }
-    }
-  });
+        if (error) throw error;
 
-  await renderAdmin();
+        if (announcements && announcements.length > 0) {
+            document.getElementById('announcementText').value = announcements[0].message;
+        }
+    } catch (error) {
+        console.error('Error loading announcement:', error);
+    }
 }
 
-document.addEventListener("DOMContentLoaded", initAdmin);
+// حفظ الإعلان
+document.getElementById('announcementForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const message = document.getElementById('announcementText').value.trim();
+    if (!message) {
+        alert('الرجاء إدخال نص الإعلان');
+        return;
+    }
+
+    try {
+        // الحصول على الإعلان الحالي
+        const { data: existing } = await supabaseAdmin
+            .from('announcements')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (existing && existing.length > 0) {
+            // تحديث الإعلان الحالي
+            const { error } = await supabaseAdmin
+                .from('announcements')
+                .update({ message })
+                .eq('id', existing[0].id);
+
+            if (error) throw error;
+        } else {
+            // إنشاء إعلان جديد
+            const { error } = await supabaseAdmin
+                .from('announcements')
+                .insert({ message });
+
+            if (error) throw error;
+        }
+
+        alert('تم حفظ الإعلان بنجاح!');
+    } catch (error) {
+        console.error('Error saving announcement:', error);
+        alert('حدث خطأ أثناء حفظ الإعلان');
+    }
+});
+
+// تحديث تلقائي كل دقيقة
+setInterval(() => {
+    if (currentPassword) {
+        loadDashboard();
+    }
+}, 60000);

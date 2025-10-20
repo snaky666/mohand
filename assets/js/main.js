@@ -1,4 +1,4 @@
-// main.js - Supabase Booking Manager
+// main.js - Supabase Booking System
 const TOTAL_DAYS = 15;
 const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
@@ -6,9 +6,10 @@ let supabase = null;
 
 async function initSupabase() {
   try {
-    const response = await fetch('/api/config');
-    const config = await response.json();
-    supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+    // Hardcoded Supabase credentials for client-side use
+    const supabaseUrl = 'https://your_supabase_url.supabase.co'; // Replace with your Supabase URL
+    const supabaseKey = 'your_supabase_key'; // Replace with your Supabase anon key
+    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
     return true;
   } catch (error) {
     console.error('Failed to initialize Supabase:', error);
@@ -34,9 +35,9 @@ async function loadBookings() {
       .from('bookings')
       .select('*')
       .order('day', { ascending: true });
-    
+
     if (error) throw error;
-    
+
     return data.map(booking => ({
       id: booking.id.substring(0, 8),
       name: booking.name,
@@ -60,7 +61,7 @@ async function saveBooking(booking) {
         day: booking.dateStr
       }])
       .select();
-    
+
     if (error) throw error;
     return data[0];
   } catch (e) {
@@ -77,7 +78,7 @@ async function loadAnnouncement() {
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
-    
+
     if (error) throw error;
     return data?.message || "";
   } catch (e) {
@@ -126,7 +127,7 @@ async function countForDate(dateStr) {
       .from('bookings')
       .select('*', { count: 'exact', head: true })
       .eq('day', dateStr);
-    
+
     if (error) throw error;
     return count || 0;
   } catch (e) {
@@ -142,7 +143,7 @@ async function cleanOldBookings() {
       .from('bookings')
       .delete()
       .lt('day', today);
-    
+
     if (error) throw error;
   } catch (e) {
     console.error('Error cleaning old bookings:', e);
