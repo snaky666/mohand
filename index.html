@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ⵎⵓⵃⵎⵎⴷ barber — حجز موعد</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">ⵎⵓⵃⵎⵎⴷ <span class="small">barber</span></div>
+    <nav class="socials">
+      <a href="#" title="واتساب" id="waLink" class="icon">📲</a>
+      <a href="#" title="انستقرام" class="icon">📷</a>
+      <a href="#" title="فايسبوك" class="icon">📘</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>احجز موعدك بسرعة</h1>
+      <p class="lead">اختر اليوم، اكتب اسمك ورقم هاتفك — لا حاجة للدفع.</p>
+      <div id="announcement" class="announcement"></div>
+    </section>
+
+    <section class="card booking">
+      <h2>نموذج الحجز</h2>
+      <form id="bookingForm" autocomplete="off">
+        <label>الاسم
+          <input type="text" id="name" required placeholder="اسمك" />
+        </label>
+
+        <label>اليوم
+          <select id="day" required>
+            <option value="">اختر اليوم</option>
+            <option value="الأحد">الأحد</option>
+            <option value="الإثنين">الإثنين</option>
+            <option value="الثلاثاء">الثلاثاء</option>
+            <option value="الأربعاء">الأربعاء</option>
+            <option value="الخميس">الخميس</option>
+            <option value="الجمعة">الجمعة</option>
+            <option value="السبت">السبت</option>
+          </select>
+        </label>
+
+        <label>الهاتف
+          <input type="tel" id="phone" required placeholder="05xxxxxxxx" pattern="[0-9+\s\-]{6,}" />
+        </label>
+
+        <div class="note">سعة الحجز: الأحد - الإثنين - الثلاثاء: 3 أشخاص | الجمعة - السبت: 5 أشخاص</div>
+
+        <button type="submit" class="btn">احجز الآن</button>
+      </form>
+
+      <div id="message" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="card list">
+      <h2>الحجوزات القادمة</h2>
+      <div id="bookingsList">لا توجد حجوزات بعد.</div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>تابعنا على</div>
+    <div class="footer-icons">
+      <a href="#" class="icon">📷 انستقرام</a>
+      <a href="#" class="icon">📘 فايسبوك</a>
+      <a href="#" id="whatsappFooter" class="icon">📲 واتساب</a>
+    </div>
+    <div class="credits">© 2025 ⵎⵓⵃⵎⵎⴷ barber</div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
