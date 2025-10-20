@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -17,8 +18,29 @@
 
   <main class="container admin">
     <h1>لوحة الإدارة</h1>
+    
+    <!-- إحصاءات سريعة -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value" id="totalBookings">0</div>
+        <div class="stat-label">إجمالي الحجوزات</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value" id="todayBookings">0</div>
+        <div class="stat-label">حجوزات اليوم</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-value" id="busiestDay">—</div>
+        <div class="stat-label">أكثر يوم طلباً</div>
+      </div>
+    </div>
+
+    <!-- إدارة الإعلانات -->
     <div class="card">
-      <h2>إضافة إعلان (يظهر في الصفحة الرئيسية)</h2>
+      <h2>📢 إدارة الإعلانات</h2>
       <textarea id="announcementInput" rows="3" placeholder="أدخل نص الإعلان هنا..."></textarea>
       <div class="row">
         <button id="saveAnn" class="btn">نشر الإعلان</button>
@@ -26,40 +48,31 @@
       </div>
     </div>
 
+    <!-- إدارة الحجوزات -->
     <div class="card">
-      <h2>قائمة الحجوزات</h2>
+      <h2>📋 قائمة الحجوزات</h2>
+      
+      <!-- أدوات التصفية والتحكم -->
+      <div class="admin-controls">
+        <div class="filter-section">
+          <label for="dayFilter">تصفية حسب اليوم:</label>
+          <select id="dayFilter">
+            <option value="all">جميع الأيام</option>
+          </select>
+        </div>
+        <div class="action-buttons">
+          <button id="exportBtn" class="btn ghost">💾 تصدير الحجوزات</button>
+          <button id="refreshBtn" class="btn ghost">🔄 تحديث</button>
+        </div>
+      </div>
+
+      <!-- قائمة الحجوزات -->
       <div id="adminList">جارٍ التحميل...</div>
     </div>
   </main>
 
   <footer class="footer">
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-section about">
-          <h3>حولنا</h3>
-          <p>نحن نقدم أفضل خدمات الحلاقة بأسعار تنافسية وجودة عالية.</p>
-        </div>
-        <div class="footer-section links">
-          <h3>روابط سريعة</h3>
-          <ul>
-            <li><a href="index.html">الرئيسية</a></li>
-            <li><a href="ads.html">العروض</a></li>
-            <li><a href="admin.html">لوحة التحكم</a></li>
-          </ul>
-        </div>
-        <div class="footer-section contact">
-          <h3>تواصل معنا</h3>
-          <p>
-            <a href="https://wa.me/213794445199" title="واتساب" id="waLink" class="social-icon whatsapp"></a>
-            <a href="https://www.instagram.com/al_one__x?igsh=NGpnamxhM2I0NHc0" title="انستقرام" class="social-icon instagram"></a>
-            <a href="https://www.facebook.com/share/1AAvRDDstf/" title="فايسبوك" class="social-icon facebook"></a>
-          </p>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        &copy; 2024 ⵎⵓⵃⵎⵎⴷ barber. جميع الحقوق محفوظة.
-      </div>
-    </div>
+    <div class="credits">© 2025 ⵎⵓⵃⵎⵎⴷ barber — جميع الحقوق محفوظة</div>
   </footer>
 
   <script src="assets/js/admin.js"></script>
