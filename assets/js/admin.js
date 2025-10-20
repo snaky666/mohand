@@ -33,11 +33,25 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
 
 // تحميل لوحة التحكم
 async function loadDashboard() {
-    await Promise.all([
-        loadStatistics(),
-        loadBookings(),
-        loadAnnouncement()
-    ]);
+    console.log('🔄 Loading admin dashboard...');
+    try {
+        // التأكد من تهيئة Supabase
+        if (!supabaseAdmin) {
+            console.error('❌ Supabase admin client not initialized');
+            alert('خطأ في الاتصال بقاعدة البيانات. يرجى تحديث الصفحة.');
+            return;
+        }
+        
+        await Promise.all([
+            loadStatistics(),
+            loadBookings(),
+            loadAnnouncement()
+        ]);
+        console.log('✅ Dashboard loaded successfully');
+    } catch (error) {
+        console.error('❌ Error loading dashboard:', error);
+        alert('حدث خطأ أثناء تحميل لوحة التحكم: ' + error.message);
+    }
 }
 
 // تحميل الإحصائيات
@@ -71,11 +85,19 @@ async function loadBookings() {
     
     try {
         if (!supabaseAdmin) {
+            console.error('❌ Supabase admin client not initialized');
             throw new Error('Supabase admin client not initialized');
+        }
+
+        if (!tableBody) {
+            console.error('❌ Table body element not found');
+            return;
         }
 
         tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">جارٍ التحميل...</td></tr>';
 
+        console.log('🔄 Fetching bookings from Supabase...');
+        
         const { data: bookings, error } = await supabaseAdmin
             .from('bookings')
             .select('*')
@@ -87,7 +109,7 @@ async function loadBookings() {
             throw new Error(error.message || 'فشل تحميل الحجوزات');
         }
 
-        console.log('✅ Loaded bookings:', bookings?.length || 0);
+        console.log('✅ Loaded bookings:', bookings?.length || 0, bookings);
 
         if (!tableBody) {
             console.error('❌ Table body element not found');
@@ -221,6 +243,25 @@ document.getElementById('announcementForm')?.addEventListener('submit', async (e
         console.error('Error saving announcement:', error);
         alert('حدث خطأ أثناء حفظ الإعلان');
     }
+});
+
+// تحميل البيانات عند فتح الصفحة (بدون تسجيل دخول - للعرض فقط)
+window.addEventListener('DOMContentLoaded', async () => {
+    console.log('📄 Admin page loaded');
+    
+    // تحقق من تهيئة Supabase
+    if (!window.supabase) {
+        console.error('❌ Supabase library not loaded');
+        return;
+    }
+    
+    // تحميل الحجوزات للعرض فقط (قبل تسجيل الدخول)
+    const tableBody = document.getElementById('bookingsTable');
+    if (tableBody && !currentPassword) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">يرجى تسجيل الدخول لعرض الحجوزات</td></tr>';
+    }
+    
+    console.log('✅ Admin page initialized');
 });
 
 // تحديث تلقائي كل دقيقة
