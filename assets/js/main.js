@@ -100,24 +100,40 @@ function getArabicDayName(date) {
   return DAYS_AR[date.getDay()];
 }
 
-function getAvailableDates() {
+async function getAvailableDates() {
   const dates = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  for (let i = 0; i < TOTAL_DAYS; i++) {
+  let daysAdded = 0;
+  let offset = 0;
+  const MAX_SEARCH_DAYS = 60; // نبحث في 60 يومًا كحد أقصى لإيجاد 15 يومًا متاحًا
+
+  // نضيف 15 يومًا متاحًا (غير ممتلئة وغير أيام الأربعاء)
+  while (daysAdded < TOTAL_DAYS && offset < MAX_SEARCH_DAYS) {
     const date = new Date(today);
-    date.setDate(today.getDate() + i);
+    date.setDate(today.getDate() + offset);
     const capacity = getDailyCapacity(date);
 
-    if (capacity === 0) continue;
+    if (capacity > 0) {
+      const dateStr = getDateString(date);
+      const booked = await countForDate(dateStr);
+      const available = capacity - booked;
 
-    dates.push({
-      dateStr: getDateString(date),
-      dayName: getArabicDayName(date),
-      displayText: `${getArabicDayName(date)} - ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
-      capacity: capacity
-    });
+      // نضيف اليوم فقط إذا كان متاحًا (ليس ممتلئًا)
+      if (available > 0) {
+        dates.push({
+          dateStr: dateStr,
+          dayName: getArabicDayName(date),
+          displayText: `${getArabicDayName(date)} - ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
+          capacity: capacity,
+          available: available
+        });
+        daysAdded++;
+      }
+    }
+    
+    offset++;
   }
 
   return dates;
@@ -193,20 +209,15 @@ function escapeHtml(s) {
 }
 
 async function populateDaySelect() {
-  const dates = getAvailableDates();
+  const dates = await getAvailableDates();
   const sel = document.getElementById("day");
   sel.innerHTML = '<option value="">اختر التاريخ</option>';
 
   for (const d of dates) {
-    const booked = await countForDate(d.dateStr);
-    const available = d.capacity - booked;
-    const label = available > 0
-      ? `${d.displayText} (متاح: ${available})`
-      : `${d.displayText} (ممتلئ)`;
+    const label = `${d.displayText} (متاح: ${d.available})`;
     const opt = document.createElement("option");
     opt.value = d.dateStr;
     opt.textContent = label;
-    opt.disabled = available <= 0;
     sel.appendChild(opt);
   }
 }
@@ -233,15 +244,14 @@ async function handleBookingSubmit(e) {
     return;
   }
 
-  const dates = getAvailableDates();
+  const dates = await getAvailableDates();
   const chosen = dates.find(d => d.dateStr === day);
   if (!chosen) {
     showMessage("التاريخ غير صالح", "error");
     return;
   }
 
-  const booked = await countForDate(day);
-  if (booked >= chosen.capacity) {
+  if (chosen.available <= 0) {
     showMessage("عذراً، هذا اليوم ممتلئ", "error");
     return;
   }
