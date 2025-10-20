@@ -1,5 +1,6 @@
-// admin.js - Supabase Admin Panel
+// admin.js - Supabase Admin Panel with Secure Server-Side Operations
 let supabase = null;
+let adminPassword = null;
 
 async function initSupabase() {
   try {
@@ -37,17 +38,28 @@ async function loadBookings() {
 }
 
 async function deleteBooking(id) {
+  if (!adminPassword) {
+    throw new Error('No admin password stored');
+  }
+  
   try {
-    const { error } = await supabase
-      .from('bookings')
-      .delete()
-      .eq('id', id);
+    const response = await fetch('/api/admin/delete-booking', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, password: adminPassword })
+    });
     
-    if (error) throw error;
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to delete booking');
+    }
+    
     return true;
   } catch (e) {
     console.error('Error deleting booking:', e);
-    return false;
+    throw e;
   }
 }
 
@@ -69,27 +81,28 @@ async function loadAnnouncement() {
 }
 
 async function saveAnnouncement(text) {
+  if (!adminPassword) {
+    throw new Error('No admin password stored');
+  }
+  
   try {
-    const announcement = await loadAnnouncement();
+    const response = await fetch('/api/admin/update-announcement', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: text, password: adminPassword })
+    });
     
-    if (announcement.id) {
-      const { error } = await supabase
-        .from('announcements')
-        .update({ message: text })
-        .eq('id', announcement.id);
-      
-      if (error) throw error;
-    } else {
-      const { error } = await supabase
-        .from('announcements')
-        .insert([{ message: text }]);
-      
-      if (error) throw error;
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to update announcement');
     }
+    
     return true;
   } catch (e) {
     console.error('Error saving announcement:', e);
-    return false;
+    throw e;
   }
 }
 
@@ -173,11 +186,11 @@ async function renderAdmin() {
       const id = btn.dataset.id;
       if (!confirm("هل تريد حذف هذا الحجز؟")) return;
       
-      const success = await deleteBooking(id);
-      if (success) {
+      try {
+        await deleteBooking(id);
         await renderAdmin();
-      } else {
-        alert("حدث خطأ أثناء الحذف. حاول مرة أخرى.");
+      } catch (error) {
+        alert("حدث خطأ أثناء الحذف: " + error.message);
       }
     });
   });
@@ -200,34 +213,47 @@ async function initAdmin() {
     return;
   }
 
-  const correct = "admin123";
   const pw = prompt("أدخل كلمة مرور المدير:");
-  if (pw !== correct) {
-    alert("كلمة المرور خاطئة. سيتم توجيهك إلى الصفحة الرئيسية.");
+  if (!pw || pw.trim() === '') {
+    alert("كلمة المرور مطلوبة. سيتم توجيهك إلى الصفحة الرئيسية.");
     window.location.href = "index.html";
     return;
   }
+
+  adminPassword = pw;
 
   const announcement = await loadAnnouncement();
   const annInput = document.getElementById("announcementInput");
   annInput.value = announcement.message;
 
   document.getElementById("saveAnn").addEventListener("click", async () => {
-    const success = await saveAnnouncement(annInput.value.trim());
-    if (success) {
+    try {
+      await saveAnnouncement(annInput.value.trim());
       alert("تم نشر الإعلان.");
-    } else {
-      alert("حدث خطأ أثناء النشر. حاول مرة أخرى.");
+    } catch (error) {
+      if (error.message.includes('Unauthorized')) {
+        alert("كلمة المرور خاطئة!");
+        adminPassword = null;
+        window.location.href = "admin.html";
+      } else {
+        alert("حدث خطأ أثناء النشر: " + error.message);
+      }
     }
   });
 
   document.getElementById("clearAnn").addEventListener("click", async () => {
     annInput.value = "";
-    const success = await saveAnnouncement("");
-    if (success) {
+    try {
+      await saveAnnouncement("");
       alert("تم إزالة الإعلان.");
-    } else {
-      alert("حدث خطأ. حاول مرة أخرى.");
+    } catch (error) {
+      if (error.message.includes('Unauthorized')) {
+        alert("كلمة المرور خاطئة!");
+        adminPassword = null;
+        window.location.href = "admin.html";
+      } else {
+        alert("حدث خطأ: " + error.message);
+      }
     }
   });
 
