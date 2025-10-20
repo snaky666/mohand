@@ -8,13 +8,30 @@ env/
 venv/
 ENV/
 .venv
+.pythonlibs/
 pip-log.txt
 pip-delete-this-directory.txt
 .pytest_cache/
 *.egg-info/
 dist/
 build/
+uv.lock
+
+# Replit
+.config/
+.cache/
+.upm/
+.local/
+.pythonlibs/
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+/tmp/
+
+# Environment variables (already in Secrets)
+.env
+.env.local
