@@ -177,6 +177,7 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
 }
 
 .sidebar-socials .social-icon {
@@ -184,6 +185,8 @@ body::before {
   justify-content: flex-start;
   padding: 12px 16px;
   gap: 12px;
+  min-height: 48px;
+  display: flex !important;
 }
 
 /* Sidebar Overlay */
@@ -648,15 +651,19 @@ textarea {
   width: auto;
   padding: 10px 20px;
   gap: 10px;
+  display: inline-flex;
+  min-width: 120px;
 }
 
 .footer .social-icon svg {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
 .footer .social-icon span {
   color: inherit;
+  white-space: nowrap;
 }
 
 .credits {
