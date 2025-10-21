@@ -1,43 +1,47 @@
-// admin.js - Supabase Admin Panel
-const ADMIN_PASSWORD = 'mohand2004'; // ⚠️ غيّر هذا!
 const PRICE_PER_BOOKING = 500;
-
-// Supabase Admin Client (يستخدم service role key)
-const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxaXJqenN6aHhncWVjZGludW90Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk2OTQ0OSwiZXhwIjoyMDc2NTQ1NDQ5fQ.hgO_aBKdVkQCNx8mlGF_c34fPPZCewL5xEiRNe_BRig';
-const supabaseAdmin = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
 let currentPassword = '';
 
-// تسجيل الدخول
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const password = document.getElementById('password').value;
 
-    if (password === ADMIN_PASSWORD) {
-        currentPassword = password;
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'block';
-        await loadDashboard();
-    } else {
-        alert('كلمة مرور خاطئة!');
+    try {
+        const response = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            currentPassword = password;
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'block';
+            await loadDashboard();
+        } else {
+            alert('كلمة مرور خاطئة!');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('حدث خطأ أثناء تسجيل الدخول');
     }
 });
 
-// تسجيل الخروج
 document.getElementById('logoutBtn')?.addEventListener('click', () => {
     currentPassword = '';
     document.getElementById('loginSection').style.display = 'block';
     document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = 'none';
     document.getElementById('password').value = '';
 });
 
-// تحميل لوحة التحكم
 async function loadDashboard() {
     console.log('🔄 Loading admin dashboard...');
     try {
-        // التأكد من تهيئة Supabase
-        if (!supabaseAdmin) {
-            console.error('❌ Supabase admin client not initialized');
+        if (!window.supabase) {
+            console.error('❌ Supabase not initialized');
             alert('خطأ في الاتصال بقاعدة البيانات. يرجى تحديث الصفحة.');
             return;
         }
@@ -54,10 +58,9 @@ async function loadDashboard() {
     }
 }
 
-// تحميل الإحصائيات
 async function loadStatistics() {
     try {
-        const { data: bookings, error } = await supabaseAdmin
+        const { data: bookings, error } = await window.supabase
             .from('bookings')
             .select('*');
 
@@ -66,11 +69,9 @@ async function loadStatistics() {
         const totalBookings = bookings.length;
         const totalRevenue = totalBookings * PRICE_PER_BOOKING;
 
-        // حساب الحجوزات اليوم
         const today = new Date().toISOString().split('T')[0];
         const todayBookings = bookings.filter(b => b.day === today).length;
 
-        // تحديث الإحصائيات
         document.getElementById('totalBookings').textContent = totalBookings;
         document.getElementById('todayBookings').textContent = todayBookings;
         document.getElementById('totalRevenue').textContent = `${totalRevenue} دج`;
@@ -79,14 +80,13 @@ async function loadStatistics() {
     }
 }
 
-// تحميل الحجوزات
 async function loadBookings() {
     const tableBody = document.getElementById('bookingsTable');
     
     try {
-        if (!supabaseAdmin) {
-            console.error('❌ Supabase admin client not initialized');
-            throw new Error('Supabase admin client not initialized');
+        if (!window.supabase) {
+            console.error('❌ Supabase not initialized');
+            throw new Error('Supabase not initialized');
         }
 
         if (!tableBody) {
@@ -98,7 +98,7 @@ async function loadBookings() {
 
         console.log('🔄 Fetching bookings from Supabase...');
         
-        const { data: bookings, error } = await supabaseAdmin
+        const { data: bookings, error } = await window.supabase
             .from('bookings')
             .select('*')
             .order('day', { ascending: true })
@@ -109,12 +109,7 @@ async function loadBookings() {
             throw new Error(error.message || 'فشل تحميل الحجوزات');
         }
 
-        console.log('✅ Loaded bookings:', bookings?.length || 0, bookings);
-
-        if (!tableBody) {
-            console.error('❌ Table body element not found');
-            return;
-        }
+        console.log('✅ Loaded bookings:', bookings?.length || 0);
 
         tableBody.innerHTML = '';
 
@@ -155,39 +150,36 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// حذف حجز
 async function deleteBooking(id) {
     if (!confirm('هل أنت متأكد من حذف هذا الحجز؟')) {
         return;
     }
 
-    const password = prompt('أدخل كلمة مرور الإدارة:');
-    if (!password || password !== ADMIN_PASSWORD) {
-        showMessage('كلمة مرور خاطئة!', 'error');
-        return;
-    }
-
     try {
-        const { error } = await supabaseAdmin
-            .from('bookings')
-            .delete()
-            .eq('id', id);
+        const response = await fetch('/api/admin/delete-booking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, password: currentPassword })
+        });
 
-        if (error) throw error;
+        const result = await response.json();
 
-        showMessage('تم حذف الحجز بنجاح!', 'success');
-        loadBookings();
-        loadStatistics();
+        if (response.ok && result.success) {
+            alert('تم حذف الحجز بنجاح!');
+            loadBookings();
+            loadStatistics();
+        } else {
+            alert('فشل حذف الحجز: ' + (result.error || 'خطأ غير معروف'));
+        }
     } catch (error) {
         console.error('Error deleting booking:', error);
-        showMessage('خطأ في حذف الحجز: ' + error.message, 'error');
+        alert('خطأ في حذف الحجز: ' + error.message);
     }
 }
 
-// تحميل الإعلان
 async function loadAnnouncement() {
     try {
-        const { data: announcements, error } = await supabaseAdmin
+        const { data: announcements, error } = await window.supabase
             .from('announcements')
             .select('*')
             .order('created_at', { ascending: false })
@@ -203,7 +195,6 @@ async function loadAnnouncement() {
     }
 }
 
-// حفظ الإعلان
 document.getElementById('announcementForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -214,70 +205,39 @@ document.getElementById('announcementForm')?.addEventListener('submit', async (e
     }
 
     try {
-        // الحصول على الإعلان الحالي
-        const { data: existing } = await supabaseAdmin
-            .from('announcements')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(1);
+        const response = await fetch('/api/admin/update-announcement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, password: currentPassword })
+        });
 
-        if (existing && existing.length > 0) {
-            // تحديث الإعلان الحالي
-            const { error } = await supabaseAdmin
-                .from('announcements')
-                .update({ message })
-                .eq('id', existing[0].id);
+        const result = await response.json();
 
-            if (error) throw error;
+        if (response.ok && result.success) {
+            alert('تم حفظ الإعلان بنجاح!');
         } else {
-            // إنشاء إعلان جديد
-            const { error } = await supabaseAdmin
-                .from('announcements')
-                .insert({ message });
-
-            if (error) throw error;
+            alert('فشل حفظ الإعلان: ' + (result.error || 'خطأ غير معروف'));
         }
-
-        alert('تم حفظ الإعلان بنجاح!');
     } catch (error) {
         console.error('Error saving announcement:', error);
         alert('حدث خطأ أثناء حفظ الإعلان');
     }
 });
 
-// تحميل البيانات عند فتح الصفحة (بدون تسجيل دخول - للعرض فقط)
-window.addEventListener('DOMContentLoaded', async () => {
-    console.log('📄 Admin page loaded');
+window.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 Admin page loaded - login required');
     
-    // تحقق من تهيئة Supabase
     if (!window.supabase) {
         console.error('❌ Supabase library not loaded');
+        alert('خطأ في تحميل المكتبات المطلوبة. يرجى تحديث الصفحة.');
         return;
     }
     
-    // تحميل الحجوزات للعرض فقط (قبل تسجيل الدخول)
-    const tableBody = document.getElementById('bookingsTable');
-    if (tableBody && !currentPassword) {
-        tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">يرجى تسجيل الدخول لعرض الحجوزات</td></tr>';
-    }
-    
-    console.log('✅ Admin page initialized');
+    console.log('✅ Admin page initialized - please login');
 });
 
-// تحديث تلقائي كل دقيقة
 setInterval(() => {
     if (currentPassword) {
         loadDashboard();
     }
 }, 60000);
-
-// Helper function to display messages
-function showMessage(msg, type) {
-    const messageElement = document.getElementById('message');
-    messageElement.textContent = msg;
-    messageElement.className = type; // 'success' or 'error'
-    messageElement.style.display = 'block';
-    setTimeout(() => {
-        messageElement.style.display = 'none';
-    }, 3000);
-}

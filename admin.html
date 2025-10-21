@@ -5,17 +5,77 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>لوحة التحكم — إدارة الحجوزات</title>
   <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 40px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #ffa500;
+    }
+    .login-container input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+    }
+    .login-container button {
+      width: 100%;
+    }
+    #adminPanel {
+      display: none;
+    }
+    .logout-btn {
+      background: rgba(255, 59, 48, 0.8);
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .logout-btn:hover {
+      background: rgba(255, 59, 48, 1);
+    }
+  </style>
 </head>
 <body>
   <header class="topbar">
     <div class="logo">ⵎⵓⵃⵎⵎⴷ <span class="small">barber</span></div>
-    <nav style="display: flex; gap: 12px;">
+    <nav style="display: flex; gap: 12px; align-items: center;">
+      <button id="logoutBtn" class="logout-btn" style="display: none;">تسجيل الخروج</button>
       <a href="ads.html" class="btn ghost">العروض</a>
       <a href="index.html" class="btn ghost">الواجهة</a>
     </nav>
   </header>
 
-  <main class="container admin">
+  <!-- قسم تسجيل الدخول -->
+  <div id="loginSection" class="login-container">
+    <h2>🔐 تسجيل دخول الإدارة</h2>
+    <form id="loginForm">
+      <input 
+        type="password" 
+        id="password" 
+        placeholder="أدخل كلمة المرور" 
+        required 
+        autocomplete="current-password"
+      />
+      <button type="submit" class="btn">دخول</button>
+    </form>
+  </div>
+
+  <!-- لوحة الإدارة (مخفية حتى تسجيل الدخول) -->
+  <main id="adminPanel" class="container admin">
     <h1>لوحة الإدارة</h1>
     
     <!-- قسم الإحصائيات -->
@@ -27,13 +87,8 @@
       </div>
       <div class="stat-card">
         <div class="stat-icon">💰</div>
-        <div class="stat-label">الدخل الشهري</div>
-        <div class="stat-value" id="monthlyIncome">0 دج</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">💎</div>
-        <div class="stat-label">الدخل السنوي</div>
-        <div class="stat-value" id="yearlyIncome">0 دج</div>
+        <div class="stat-label">الدخل المتوقع</div>
+        <div class="stat-value" id="totalRevenue">0 دج</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">📅</div>
@@ -44,11 +99,12 @@
 
     <div class="card">
       <h2>إضافة إعلان (يظهر في الصفحة الرئيسية)</h2>
-      <textarea id="announcementInput" rows="3" placeholder="أدخل نص الإعلان هنا..."></textarea>
-      <div class="row">
-        <button id="saveAnn" class="btn">نشر الإعلان</button>
-        <button id="clearAnn" class="btn ghost">إلغاء الإعلان</button>
-      </div>
+      <form id="announcementForm">
+        <textarea id="announcementText" rows="3" placeholder="أدخل نص الإعلان هنا..."></textarea>
+        <div class="row">
+          <button type="submit" class="btn">نشر الإعلان</button>
+        </div>
+      </form>
     </div>
 
     <div class="card">
