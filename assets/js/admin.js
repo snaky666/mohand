@@ -1,5 +1,5 @@
 // admin.js - Supabase Admin Panel
-const ADMIN_PASSWORD = 'mohand2004'; // ⚠️ غيّر هذا!
+const ADMIN_PASSWORD = 'admin123'; // ⚠️ غيّر هذا!
 const PRICE_PER_BOOKING = 500;
 
 // Supabase Admin Client (يستخدم service role key)
@@ -64,16 +64,40 @@ async function loadStatistics() {
         if (error) throw error;
 
         const totalBookings = bookings.length;
-        const totalRevenue = totalBookings * PRICE_PER_BOOKING;
-
-        // حساب الحجوزات اليوم
         const today = new Date().toISOString().split('T')[0];
         const todayBookings = bookings.filter(b => b.day === today).length;
 
+        // حساب الدخل الشهري والسنوي
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        let monthlyCount = 0;
+        let yearlyCount = 0;
+
+        bookings.forEach(b => {
+            const d = new Date(b.day + 'T00:00:00');
+            if (d.getFullYear() === currentYear) {
+                yearlyCount++;
+                if (d.getMonth() === currentMonth) {
+                    monthlyCount++;
+                }
+            }
+        });
+
+        const monthlyIncome = monthlyCount * PRICE_PER_BOOKING;
+        const yearlyIncome = yearlyCount * PRICE_PER_BOOKING;
+
         // تحديث الإحصائيات
-        document.getElementById('totalBookings').textContent = totalBookings;
-        document.getElementById('todayBookings').textContent = todayBookings;
-        document.getElementById('totalRevenue').textContent = `${totalRevenue} دج`;
+        const totalBookingsEl = document.getElementById('totalBookings');
+        const todayBookingsEl = document.getElementById('todayBookings');
+        const monthlyIncomeEl = document.getElementById('monthlyIncome');
+        const yearlyIncomeEl = document.getElementById('yearlyIncome');
+
+        if (totalBookingsEl) totalBookingsEl.textContent = totalBookings;
+        if (todayBookingsEl) todayBookingsEl.textContent = todayBookings;
+        if (monthlyIncomeEl) monthlyIncomeEl.textContent = `${monthlyIncome} دج`;
+        if (yearlyIncomeEl) yearlyIncomeEl.textContent = `${yearlyIncome} دج`;
     } catch (error) {
         console.error('Error loading statistics:', error);
     }
@@ -281,3 +305,9 @@ function showMessage(msg, type) {
         messageElement.style.display = 'none';
     }, 3000);
 }
+
+// مسح نص الإعلان
+document.getElementById('clearAnn')?.addEventListener('click', () => {
+    const textarea = document.getElementById('announcementText');
+    if (textarea) textarea.value = '';
+});
