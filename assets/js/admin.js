@@ -5,27 +5,18 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const password = document.getElementById('password').value;
 
-    try {
-        const response = await fetch('/api/admin/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password })
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            currentPassword = password;
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'block';
-            document.getElementById('logoutBtn').style.display = 'block';
-            await loadDashboard();
-        } else {
-            alert('كلمة مرور خاطئة!');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        alert('حدث خطأ أثناء تسجيل الدخول');
+    // التحقق من كلمة المرور (للاستخدام على GitHub Pages)
+    // ⚠️ ملاحظة: هذا غير آمن تماماً - يجب استخدام خادم حقيقي للأمان الكامل
+    const ADMIN_PASSWORD = 'mohand2004'; // غيّر هذا إلى كلمة مرور قوية
+    
+    if (password === ADMIN_PASSWORD) {
+        currentPassword = password;
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('logoutBtn').style.display = 'block';
+        await loadDashboard();
+    } else {
+        alert('كلمة مرور خاطئة!');
     }
 });
 
