@@ -1,4 +1,3 @@
-
 -- Supabase Database Setup for ⵎⵓⵃⵎⵎⴷ Barber Booking System
 -- Run this SQL in your Supabase SQL Editor
 
@@ -105,62 +104,39 @@ WHERE NOT EXISTS (SELECT 1 FROM announcements);
 -- ========================================
 -- Create day_settings table for managing work days and capacity
 -- ========================================
-CREATE TABLE IF NOT EXISTS day_settings (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  day_of_week INTEGER NOT NULL CHECK (day_of_week >= 0 AND day_of_week <= 6),
-  day_name_ar TEXT NOT NULL,
-  capacity INTEGER NOT NULL CHECK (capacity >= 0),
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(day_of_week)
+-- إنشاء جدول إعدادات الأيام
+CREATE TABLE IF NOT EXISTS public.day_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    day_name TEXT NOT NULL UNIQUE,
+    day_number INTEGER NOT NULL UNIQUE,
+    capacity INTEGER NOT NULL DEFAULT 3,
+    is_open BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Enable Row Level Security
-ALTER TABLE day_settings ENABLE ROW LEVEL SECURITY;
+-- تفعيل Row Level Security
+ALTER TABLE public.day_settings ENABLE ROW LEVEL SECURITY;
 
--- السماح بالقراءة للجميع
-CREATE POLICY "Enable read access for all users on day_settings" ON day_settings
-  FOR SELECT USING (true);
+-- السماح للجميع بالقراءة
+CREATE POLICY "Allow public read access on day_settings"
+    ON public.day_settings
+    FOR SELECT
+    USING (true);
 
--- السماح بالإضافة للجميع
-CREATE POLICY "Enable insert for all users on day_settings" ON day_settings
-  FOR INSERT WITH CHECK (true);
-
--- السماح بالتحديث للجميع
-CREATE POLICY "Enable update for all users on day_settings" ON day_settings
-  FOR UPDATE USING (true);
-
--- السماح بالحذف للجميع
-CREATE POLICY "Enable delete for all users on day_settings" ON day_settings
-  FOR DELETE USING (true);
-
--- Create trigger for updated_at
-DROP TRIGGER IF EXISTS update_day_settings_updated_at ON day_settings;
-CREATE TRIGGER update_day_settings_updated_at BEFORE UPDATE ON day_settings
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- Insert default day settings
-INSERT INTO day_settings (day_of_week, day_name_ar, capacity, is_active)
+-- إدراج البيانات الأولية للأيام
+INSERT INTO public.day_settings (day_name, day_number, capacity, is_open)
 VALUES 
-  (0, 'الأحد', 3, true),
-  (1, 'الإثنين', 3, true),
-  (2, 'الثلاثاء', 3, true),
-  (3, 'الأربعاء', 0, false),
-  (4, 'الخميس', 3, true),
-  (5, 'الجمعة', 5, true),
-  (6, 'السبت', 5, true)
-ON CONFLICT (day_of_week) DO NOTHING;
+    ('الأحد', 0, 3, true),
+    ('الإثنين', 1, 3, true),
+    ('الثلاثاء', 2, 3, true),
+    ('الأربعاء', 3, 3, false),
+    ('الخميس', 4, 3, false),
+    ('الجمعة', 5, 5, true),
+    ('السبت', 6, 5, true)
+ON CONFLICT (day_name) DO NOTHING;
 
--- ========================================
--- Enable Realtime for instant updates
--- ========================================
--- Note: You also need to enable Realtime in your Supabase Dashboard:
--- 1. Go to Database > Replication
--- 2. Enable replication for 'bookings' table
--- 3. Enable replication for 'announcements' table
--- This allows the app to receive instant updates when data changes
-
--- Alternative: Run this in SQL Editor if you have proper permissions
--- ALTER PUBLICATION supabase_realtime ADD TABLE bookings;
--- ALTER PUBLICATION supabase_realtime ADD TABLE announcements;
+-- تفعيل Realtime للجداول
+ALTER PUBLICATION supabase_realtime ADD TABLE public.bookings;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.announcements;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.day_settings;
