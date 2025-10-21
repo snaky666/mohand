@@ -166,21 +166,8 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
   <script>
-    let supabase = null;
-
-    async function initSupabase() {
-      try {
-        const response = await fetch('/api/config');
-        const config = await response.json();
-        supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
-        return true;
-      } catch (error) {
-        console.error('Failed to initialize Supabase:', error);
-        return false;
-      }
-    }
-
     async function loadAnnouncement() {
       try {
         if (!supabase) {
@@ -192,20 +179,15 @@
           .from('announcements')
           .select('message')
           .order('created_at', { ascending: false })
-          .limit(1);
+          .limit(1)
+          .single();
         
         if (error) {
           console.error('Error loading announcement:', error);
           return "";
         }
         
-        // التحقق من وجود بيانات
-        if (data && data.length > 0) {
-          console.log('✅ Announcement loaded:', data[0].message);
-          return data[0].message;
-        }
-        
-        return "";
+        return data?.message || "";
       } catch (e) {
         console.error('Error loading announcement:', e);
         return "";
@@ -213,8 +195,7 @@
     }
     
     async function initAds() {
-      const initialized = await initSupabase();
-      if (!initialized) {
+      if (!supabase) {
         console.error('Failed to initialize Supabase');
         return;
       }
