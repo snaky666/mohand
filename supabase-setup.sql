@@ -1,3 +1,4 @@
+
 -- Supabase Database Setup for ⵎⵓⵃⵎⵎⴷ Barber Booking System
 -- Run this SQL in your Supabase SQL Editor
 
@@ -26,7 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_day ON bookings(day);
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies if they exist
+-- حذف جميع السياسات القديمة
 DROP POLICY IF EXISTS "Allow public read access" ON bookings;
 DROP POLICY IF EXISTS "Allow public insert" ON bookings;
 DROP POLICY IF EXISTS "Enable read access for all users" ON bookings;
@@ -36,28 +37,49 @@ DROP POLICY IF EXISTS "Allow public read access" ON announcements;
 DROP POLICY IF EXISTS "Enable read access for all users" ON announcements;
 DROP POLICY IF EXISTS "Enable insert/update access for all users" ON announcements;
 DROP POLICY IF EXISTS "Enable update access for all users" ON announcements;
+DROP POLICY IF EXISTS "Enable insert for all users on announcements" ON announcements;
+DROP POLICY IF EXISTS "Enable update for all users on announcements" ON announcements;
+DROP POLICY IF EXISTS "Enable read access for all users on announcements" ON announcements;
 
--- Create SECURE policies for bookings
--- Users can read all bookings
-CREATE POLICY "Allow public read access" ON bookings
+-- ========================================
+-- سياسات جدول bookings
+-- ========================================
+
+-- السماح بالقراءة للجميع
+CREATE POLICY "Enable read access for all users" ON bookings
   FOR SELECT USING (true);
 
--- Users can create new bookings
-CREATE POLICY "Allow public insert" ON bookings
+-- السماح بالإضافة للجميع
+CREATE POLICY "Enable insert for all users" ON bookings
   FOR INSERT WITH CHECK (true);
 
--- Only service role can delete bookings (admin panel will use server endpoint)
--- No anonymous delete policy - deletion must go through authenticated server
+-- السماح بالحذف للجميع
+CREATE POLICY "Enable delete for all users" ON bookings
+  FOR DELETE USING (true);
 
--- Create SECURE policies for announcements
--- Users can read announcements
-CREATE POLICY "Allow public read access" ON announcements
+-- ========================================
+-- سياسات جدول announcements
+-- ========================================
+
+-- السماح بالقراءة للجميع
+CREATE POLICY "Enable read access for all users on announcements" ON announcements
   FOR SELECT USING (true);
 
--- Only service role can insert/update announcements (admin panel will use server endpoint)
--- No anonymous insert/update policy - changes must go through authenticated server
+-- السماح بالإضافة للجميع
+CREATE POLICY "Enable insert for all users on announcements" ON announcements
+  FOR INSERT WITH CHECK (true);
 
+-- السماح بالتحديث للجميع
+CREATE POLICY "Enable update for all users on announcements" ON announcements
+  FOR UPDATE USING (true);
+
+-- السماح بالحذف للجميع
+CREATE POLICY "Enable delete for all users on announcements" ON announcements
+  FOR DELETE USING (true);
+
+-- ========================================
 -- Create function to update updated_at timestamp
+-- ========================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN

@@ -190,32 +190,57 @@ document.getElementById('announcementForm')?.addEventListener('submit', async (e
         return;
     }
 
+    console.log('💾 Saving announcement:', message);
+
     try {
-        const { data: existing } = await supabase
+        if (!supabase) {
+            throw new Error('Supabase not initialized');
+        }
+
+        const { data: existing, error: fetchError } = await supabase
             .from('announcements')
             .select('*')
             .order('created_at', { ascending: false })
             .limit(1);
 
-        if (existing && existing.length > 0) {
-            const { error } = await supabase
-                .from('announcements')
-                .update({ message })
-                .eq('id', existing[0].id);
-
-            if (error) throw error;
-        } else {
-            const { error } = await supabase
-                .from('announcements')
-                .insert({ message });
-
-            if (error) throw error;
+        if (fetchError) {
+            console.error('❌ Error fetching existing announcements:', fetchError);
+            throw fetchError;
         }
 
-        alert('تم حفظ الإعلان بنجاح!');
+        console.log('📋 Existing announcements:', existing?.length || 0);
+
+        if (existing && existing.length > 0) {
+            console.log('🔄 Updating existing announcement:', existing[0].id);
+            const { data, error } = await supabase
+                .from('announcements')
+                .update({ message })
+                .eq('id', existing[0].id)
+                .select();
+
+            if (error) {
+                console.error('❌ Update error:', error);
+                throw error;
+            }
+            console.log('✅ Updated announcement:', data);
+        } else {
+            console.log('➕ Creating new announcement');
+            const { data, error } = await supabase
+                .from('announcements')
+                .insert({ message })
+                .select();
+
+            if (error) {
+                console.error('❌ Insert error:', error);
+                throw error;
+            }
+            console.log('✅ Created announcement:', data);
+        }
+
+        alert('تم حفظ الإعلان بنجاح! سيظهر في الصفحة الرئيسية وصفحة الإعلانات.');
     } catch (error) {
-        console.error('Error saving announcement:', error);
-        alert('حدث خطأ أثناء حفظ الإعلان');
+        console.error('❌ Error saving announcement:', error);
+        alert('حدث خطأ أثناء حفظ الإعلان: ' + error.message);
     }
 });
 
