@@ -255,12 +255,18 @@ async function populateDaySelect() {
 }
 
 async function showAnnouncement() {
+  console.log('🚀 Starting showAnnouncement function...');
   const msg = await loadAnnouncement();
   const ann = document.getElementById("announcement");
   const homeAnn = document.getElementById("homeAnnouncement");
   const homeAnnText = document.getElementById("homeAnnouncementText");
   
-  console.log('📢 Showing announcement:', msg);
+  console.log('📢 Announcement message:', msg);
+  console.log('🔍 Elements found:', {
+    ann: !!ann,
+    homeAnn: !!homeAnn,
+    homeAnnText: !!homeAnnText
+  });
   
   if (msg && msg.trim()) {
     // عرض الإعلان في المكانين

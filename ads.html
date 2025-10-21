@@ -195,14 +195,18 @@
     }
     
     async function initAds() {
+      console.log('🚀 Starting initAds function...');
+      
       if (!supabase) {
-        console.error('Failed to initialize Supabase');
+        console.error('❌ Failed to initialize Supabase');
         return;
       }
+      
+      console.log('✅ Supabase is initialized, loading announcement...');
 
       // تحميل الإعلان
       const ann = await loadAnnouncement();
-      console.log('Announcement text:', ann);
+      console.log('📢 Announcement text received:', ann);
       
       const annBanner = document.getElementById("adsAnnouncement");
       const annText = document.getElementById("adsAnnouncementText");
