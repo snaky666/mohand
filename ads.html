@@ -292,6 +292,40 @@
       }
       
       console.log('✅ [ADS PAGE] Initialization complete');
+      
+      setupRealtimeSubscription();
+    }
+
+    function setupRealtimeSubscription() {
+      try {
+        supabase
+          .channel('ads-announcements-channel')
+          .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'announcements' }, 
+            (payload) => {
+              console.log('🔔 تم تحديث الإعلان في صفحة العروض!', payload);
+              loadAnnouncement().then(msg => {
+                const annBanner = document.getElementById("adsAnnouncement");
+                const annText = document.getElementById("adsAnnouncementText");
+                
+                if (msg && msg.trim()) {
+                  if (annBanner) annBanner.style.display = "block";
+                  if (annText) annText.textContent = msg;
+                  console.log('✅ تم تحديث الإعلان تلقائياً');
+                } else {
+                  if (annBanner) annBanner.style.display = "none";
+                }
+              });
+            }
+          )
+          .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+              console.log('✅ [ADS PAGE] تم الاشتراك في التحديثات الفورية');
+            }
+          });
+      } catch (error) {
+        console.error('❌ خطأ في إعداد التحديثات الفورية:', error);
+      }
     }
 
     if (document.readyState === 'loading') {

@@ -101,3 +101,16 @@ CREATE TRIGGER update_announcements_updated_at BEFORE UPDATE ON announcements
 INSERT INTO announcements (message)
 SELECT 'مرحباً بكم في صالون ⵎⵓⵃⵎⵎⴷ barber! احجز موعدك الآن.'
 WHERE NOT EXISTS (SELECT 1 FROM announcements);
+
+-- ========================================
+-- Enable Realtime for instant updates
+-- ========================================
+-- Note: You also need to enable Realtime in your Supabase Dashboard:
+-- 1. Go to Database > Replication
+-- 2. Enable replication for 'bookings' table
+-- 3. Enable replication for 'announcements' table
+-- This allows the app to receive instant updates when data changes
+
+-- Alternative: Run this in SQL Editor if you have proper permissions
+-- ALTER PUBLICATION supabase_realtime ADD TABLE bookings;
+-- ALTER PUBLICATION supabase_realtime ADD TABLE announcements;

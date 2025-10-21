@@ -2,14 +2,14 @@
 const TOTAL_DAYS = 15;
 const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
-// استخدام إعدادات Supabase من ملف supabase-config.js
+// استخدام نفس عميل Supabase من ملف supabase-config.js
 let supabaseClient = null;
 
 function initSupabase() {
   try {
-    // استخدام الإعدادات من supabase-config.js
-    if (window.supabase && typeof window.supabase.createClient === 'function') {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // استخدام العميل المُنشأ في supabase-config.js بدلاً من إنشاء واحد جديد
+    if (window.supabase && supabase) {
+      supabaseClient = supabase;
       return true;
     }
     return false;
@@ -407,6 +407,46 @@ async function initApp() {
   const form = document.getElementById("bookingForm");
   if (form) {
     form.addEventListener("submit", handleBookingSubmit);
+  }
+
+  setupRealtimeSubscription();
+}
+
+function setupRealtimeSubscription() {
+  try {
+    supabaseClient
+      .channel('announcements-channel')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'announcements' }, 
+        (payload) => {
+          console.log('🔔 تم تحديث الإعلان!', payload);
+          showAnnouncement();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ تم الاشتراك في التحديثات الفورية للإعلانات');
+        }
+      });
+
+    supabaseClient
+      .channel('bookings-channel')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'bookings' }, 
+        (payload) => {
+          console.log('🔔 تم تحديث الحجوزات!', payload);
+          cachedDates = null;
+          renderBookings();
+          populateDaySelect();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ تم الاشتراك في التحديثات الفورية للحجوزات');
+        }
+      });
+  } catch (error) {
+    console.error('❌ خطأ في إعداد التحديثات الفورية:', error);
   }
 }
 
