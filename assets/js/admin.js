@@ -73,7 +73,28 @@ async function loadStatistics() {
         // تحديث الإحصائيات
         document.getElementById('totalBookings').textContent = totalBookings;
         document.getElementById('todayBookings').textContent = todayBookings;
-        document.getElementById('totalRevenue').textContent = `${totalRevenue} دج`;
+        
+        // حساب الدخل الشهري والسنوي
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        const monthlyBookings = bookings.filter(b => {
+            const bookingDate = new Date(b.day);
+            return bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear;
+        }).length;
+        const yearlyBookings = bookings.filter(b => {
+            const bookingDate = new Date(b.day);
+            return bookingDate.getFullYear() === currentYear;
+        }).length;
+        
+        const monthlyIncome = monthlyBookings * PRICE_PER_BOOKING;
+        const yearlyIncome = yearlyBookings * PRICE_PER_BOOKING;
+        
+        if (document.getElementById('monthlyIncome')) {
+            document.getElementById('monthlyIncome').textContent = `${monthlyIncome} دج`;
+        }
+        if (document.getElementById('yearlyIncome')) {
+            document.getElementById('yearlyIncome').textContent = `${yearlyIncome} دج`;
+        }
     } catch (error) {
         console.error('Error loading statistics:', error);
     }
@@ -245,23 +266,50 @@ document.getElementById('announcementForm')?.addEventListener('submit', async (e
     }
 });
 
-// تحميل البيانات عند فتح الصفحة (بدون تسجيل دخول - للعرض فقط)
+// إلغاء الإعلان
+document.getElementById('clearAnn')?.addEventListener('click', async () => {
+    if (!confirm('هل أنت متأكد من حذف الإعلان؟')) {
+        return;
+    }
+
+    try {
+        // حذف جميع الإعلانات
+        const { error } = await supabaseAdmin
+            .from('announcements')
+            .delete()
+            .neq('id', 0); // حذف جميع السجلات
+
+        if (error) throw error;
+
+        document.getElementById('announcementText').value = '';
+        alert('تم حذف الإعلان بنجاح!');
+    } catch (error) {
+        console.error('Error clearing announcement:', error);
+        alert('حدث خطأ أثناء حذف الإعلان');
+    }
+});
+
+// تحميل البيانات عند فتح الصفحة
 window.addEventListener('DOMContentLoaded', async () => {
     console.log('📄 Admin page loaded');
     
     // تحقق من تهيئة Supabase
     if (!window.supabase) {
         console.error('❌ Supabase library not loaded');
+        alert('خطأ في تحميل Supabase. يرجى التحقق من الاتصال بالإنترنت.');
         return;
     }
     
-    // تحميل الحجوزات للعرض فقط (قبل تسجيل الدخول)
-    const tableBody = document.getElementById('bookingsTable');
-    if (tableBody && !currentPassword) {
-        tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">يرجى تسجيل الدخول لعرض الحجوزات</td></tr>';
+    // التأكد من ظهور شاشة تسجيل الدخول
+    const loginSection = document.getElementById('loginSection');
+    const adminPanel = document.getElementById('adminPanel');
+    
+    if (loginSection && adminPanel) {
+        loginSection.style.display = 'block';
+        adminPanel.style.display = 'none';
     }
     
-    console.log('✅ Admin page initialized');
+    console.log('✅ Admin page initialized - login required');
 });
 
 // تحديث تلقائي كل دقيقة
