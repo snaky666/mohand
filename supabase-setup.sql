@@ -1,3 +1,4 @@
+
 -- Supabase Database Setup for ⵎⵓⵃⵎⵎⴷ Barber Booking System
 -- Run this SQL in your Supabase SQL Editor
 
@@ -102,15 +103,19 @@ SELECT 'مرحباً بكم في صالون ⵎⵓⵃⵎⵎⴷ barber! احجز 
 WHERE NOT EXISTS (SELECT 1 FROM announcements);
 
 -- ========================================
--- Create day_settings table for managing work days and capacity
+-- Create day_settings table
 -- ========================================
--- إنشاء جدول إعدادات الأيام
-CREATE TABLE IF NOT EXISTS public.day_settings (
+
+-- حذف الجدول القديم إذا كان موجودًا
+DROP TABLE IF EXISTS public.day_settings CASCADE;
+
+-- إنشاء جدول إعدادات الأيام بالهيكل الصحيح
+CREATE TABLE public.day_settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    day_name TEXT NOT NULL UNIQUE,
-    day_number INTEGER NOT NULL UNIQUE,
-    capacity INTEGER NOT NULL DEFAULT 3,
-    is_open BOOLEAN NOT NULL DEFAULT true,
+    day_of_week INTEGER NOT NULL UNIQUE CHECK (day_of_week >= 0 AND day_of_week <= 6),
+    day_name_ar TEXT NOT NULL,
+    capacity INTEGER NOT NULL DEFAULT 3 CHECK (capacity >= 0),
+    is_active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -118,23 +123,39 @@ CREATE TABLE IF NOT EXISTS public.day_settings (
 -- تفعيل Row Level Security
 ALTER TABLE public.day_settings ENABLE ROW LEVEL SECURITY;
 
+-- حذف السياسات القديمة
+DROP POLICY IF EXISTS "Allow public read access on day_settings" ON public.day_settings;
+DROP POLICY IF EXISTS "Enable read access for all users on day_settings" ON public.day_settings;
+DROP POLICY IF EXISTS "Enable update for all users on day_settings" ON public.day_settings;
+
 -- السماح للجميع بالقراءة
-CREATE POLICY "Allow public read access on day_settings"
+CREATE POLICY "Enable read access for all users on day_settings"
     ON public.day_settings
     FOR SELECT
     USING (true);
 
+-- السماح للجميع بالتحديث
+CREATE POLICY "Enable update for all users on day_settings"
+    ON public.day_settings
+    FOR UPDATE
+    USING (true);
+
 -- إدراج البيانات الأولية للأيام
-INSERT INTO public.day_settings (day_name, day_number, capacity, is_open)
+INSERT INTO public.day_settings (day_of_week, day_name_ar, capacity, is_active)
 VALUES 
-    ('الأحد', 0, 3, true),
-    ('الإثنين', 1, 3, true),
-    ('الثلاثاء', 2, 3, true),
-    ('الأربعاء', 3, 3, false),
-    ('الخميس', 4, 3, false),
-    ('الجمعة', 5, 5, true),
-    ('السبت', 6, 5, true)
-ON CONFLICT (day_name) DO NOTHING;
+    (0, 'الأحد', 3, true),
+    (1, 'الإثنين', 3, true),
+    (2, 'الثلاثاء', 3, true),
+    (3, 'الأربعاء', 3, false),
+    (4, 'الخميس', 3, false),
+    (5, 'الجمعة', 5, true),
+    (6, 'السبت', 5, true)
+ON CONFLICT (day_of_week) DO NOTHING;
+
+-- Create trigger for day_settings
+DROP TRIGGER IF EXISTS update_day_settings_updated_at ON public.day_settings;
+CREATE TRIGGER update_day_settings_updated_at BEFORE UPDATE ON public.day_settings
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- تفعيل Realtime للجداول
 ALTER PUBLICATION supabase_realtime ADD TABLE public.bookings;
