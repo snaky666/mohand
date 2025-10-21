@@ -169,6 +169,7 @@
   <script src="assets/js/supabase-config.js"></script>
   <script>
     async function loadAnnouncement() {
+      console.log('🔄 Loading announcement from Supabase...');
       try {
         if (!supabase) {
           console.error('❌ Supabase not initialized');
@@ -186,35 +187,54 @@
           return "";
         }
         
-        console.log('📢 Announcement data:', data);
-        return (data && data.length > 0) ? data[0].message : "";
+        console.log('📢 Announcement data from DB:', data);
+        const message = (data && data.length > 0) ? data[0].message : "";
+        console.log('📢 Extracted message:', message);
+        return message;
       } catch (e) {
-        console.error('❌ Error loading announcement:', e);
+        console.error('❌ Exception in loadAnnouncement:', e);
         return "";
       }
     }
     
     async function initAds() {
-      console.log('🚀 Starting initAds function...');
+      console.log('🚀 [ADS PAGE] Starting initAds function...');
+      
+      // انتظر حتى يتم تحميل Supabase
+      let retries = 0;
+      while (!supabase && retries < 10) {
+        console.log('⏳ Waiting for Supabase to load...');
+        await new Promise(resolve => setTimeout(resolve, 100));
+        retries++;
+      }
       
       if (!supabase) {
-        console.error('❌ Failed to initialize Supabase');
+        console.error('❌ Failed to initialize Supabase after retries');
         return;
       }
       
-      console.log('✅ Supabase is initialized, loading announcement...');
+      console.log('✅ Supabase is ready, loading announcement...');
 
       // تحميل الإعلان
       const ann = await loadAnnouncement();
-      console.log('📢 Announcement text received:', ann);
+      console.log('📢 Final announcement text:', ann);
       
       const annBanner = document.getElementById("adsAnnouncement");
       const annText = document.getElementById("adsAnnouncementText");
       
+      console.log('🔍 Banner element:', annBanner);
+      console.log('🔍 Text element:', annText);
+      
       if (ann && ann.trim()) {
-        console.log('✅ Displaying announcement');
-        if (annBanner) annBanner.style.display = "block";
-        if (annText) annText.textContent = ann;
+        console.log('✅ Displaying announcement:', ann);
+        if (annBanner) {
+          annBanner.style.display = "block";
+          console.log('✅ Banner display set to block');
+        }
+        if (annText) {
+          annText.textContent = ann;
+          console.log('✅ Text content set');
+        }
       } else {
         console.log('ℹ️ No announcement to display');
         if (annBanner) annBanner.style.display = "none";
@@ -259,22 +279,26 @@
 
         sidebarOverlay.addEventListener("click", closeSidebar);
 
-        // Close sidebar on navigation
         const sidebarLinks = sidebar.querySelectorAll("a");
         sidebarLinks.forEach(link => {
           link.addEventListener("click", closeSidebar);
         });
 
-        // Close sidebar on escape key
         document.addEventListener("keydown", (e) => {
           if (e.key === "Escape" && sidebar.classList.contains("active")) {
             closeSidebar();
           }
         });
       }
+      
+      console.log('✅ [ADS PAGE] Initialization complete');
     }
 
-    document.addEventListener("DOMContentLoaded", initAds);
+    if (document.readyState === 'loading') {
+      document.addEventListener("DOMContentLoaded", initAds);
+    } else {
+      initAds();
+    }
   </script>
 </body>
 </html>
