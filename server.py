@@ -3,21 +3,20 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
 import json
 from urllib.parse import urlparse
-from supabase import create_client, Client
+from supabase import create_client
+
+supabase_admin_client = None
+
+def get_supabase_admin():
+    global supabase_admin_client
+    if supabase_admin_client is None:
+        url = os.environ.get('SUPABASE_URL', '')
+        key = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
+        if url and key:
+            supabase_admin_client = create_client(url, key)
+    return supabase_admin_client
 
 class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
-    
-    def __init__(self, *args, **kwargs):
-        self.supabase_admin: Client = None
-        super().__init__(*args, **kwargs)
-    
-    def _get_admin_client(self):
-        if self.supabase_admin is None:
-            url = os.environ.get('SUPABASE_URL', '')
-            key = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
-            if url and key:
-                self.supabase_admin = create_client(url, key)
-        return self.supabase_admin
     
     def end_headers(self):
         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
@@ -77,11 +76,17 @@ class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
         if parsed_path.path == '/api/admin/delete-booking':
             booking_id = data.get('id')
             if not booking_id:
-                self.send_error(400, 'Missing booking ID')
+                self.send_response(400)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Missing booking ID'}).encode())
                 return
             
             try:
-                client = self._get_admin_client()
+                client = get_supabase_admin()
+                if not client:
+                    raise Exception('Supabase client not initialized')
+                
                 response = client.table('bookings').delete().eq('id', booking_id).execute()
                 
                 self.send_response(200)
@@ -89,6 +94,7 @@ class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({'success': True}).encode())
             except Exception as e:
+                print(f'Error deleting booking: {e}')
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
@@ -98,7 +104,9 @@ class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
             message = data.get('message', '')
             
             try:
-                client = self._get_admin_client()
+                client = get_supabase_admin()
+                if not client:
+                    raise Exception('Supabase client not initialized')
                 
                 response = client.table('announcements').select('*').order('created_at', desc=True).limit(1).execute()
                 
@@ -113,6 +121,7 @@ class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({'success': True}).encode())
             except Exception as e:
+                print(f'Error updating announcement: {e}')
                 self.send_response(500)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
