@@ -40,7 +40,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
 async function loadDashboard() {
     console.log('🔄 Loading admin dashboard...');
     try {
-        if (!window.supabase) {
+        if (!supabase) {
             console.error('❌ Supabase not initialized');
             alert('خطأ في الاتصال بقاعدة البيانات. يرجى تحديث الصفحة.');
             return;
@@ -60,7 +60,7 @@ async function loadDashboard() {
 
 async function loadStatistics() {
     try {
-        const { data: bookings, error } = await window.supabase
+        const { data: bookings, error } = await supabase
             .from('bookings')
             .select('*');
 
@@ -84,7 +84,7 @@ async function loadBookings() {
     const tableBody = document.getElementById('bookingsTable');
     
     try {
-        if (!window.supabase) {
+        if (!supabase) {
             console.error('❌ Supabase not initialized');
             throw new Error('Supabase not initialized');
         }
@@ -98,7 +98,7 @@ async function loadBookings() {
 
         console.log('🔄 Fetching bookings from Supabase...');
         
-        const { data: bookings, error } = await window.supabase
+        const { data: bookings, error } = await supabase
             .from('bookings')
             .select('*')
             .order('day', { ascending: true })
@@ -179,7 +179,7 @@ async function deleteBooking(id) {
 
 async function loadAnnouncement() {
     try {
-        const { data: announcements, error } = await window.supabase
+        const { data: announcements, error } = await supabase
             .from('announcements')
             .select('*')
             .order('created_at', { ascending: false })
@@ -227,7 +227,7 @@ document.getElementById('announcementForm')?.addEventListener('submit', async (e
 window.addEventListener('DOMContentLoaded', () => {
     console.log('📄 Admin page loaded - login required');
     
-    if (!window.supabase) {
+    if (!supabase) {
         console.error('❌ Supabase library not loaded');
         alert('خطأ في تحميل المكتبات المطلوبة. يرجى تحديث الصفحة.');
         return;
