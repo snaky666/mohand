@@ -1327,3 +1327,84 @@ nav .btn.ghost {
   padding: 8px 16px;
   font-size: 14px;
 }
+
+/* Admin Login Form Styles */
+#loginSection {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 40px;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+#loginSection h1 {
+  color: var(--accent-gold);
+  margin-bottom: 30px;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+#loginSection input[type="password"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  transition: var(--transition-smooth);
+}
+
+#loginSection input[type="password"]:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#loginSection input[type="password"]::placeholder {
+  color: var(--text-muted);
+}
+
+#message {
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+}
+
+#message.success {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+#message.error {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+/* Admin Panel Styles */
+#adminPanel {
+  animation: fadeIn 0.6s ease-out;
+}
+
+#adminPanel h1 {
+  color: var(--accent-gold);
+  font-size: 2.5rem;
+  margin-bottom: 0;
+}
+
+#logoutBtn {
+  background: var(--accent-coral);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+#logoutBtn:hover {
+  background: #ff6b6b;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
