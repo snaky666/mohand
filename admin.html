@@ -16,7 +16,24 @@
   </header>
 
   <main class="container admin">
+    <!-- قسم تسجيل الدخول -->
+    <section id="loginSection" class="card" style="display: block;">
+      <h2>تسجيل الدخول للإدارة</h2>
+      <form id="loginForm" autocomplete="off">
+        <label>كلمة المرور
+          <input type="password" id="password" required placeholder="••••••" />
+        </label>
+        <button type="submit" class="btn">تسجيل الدخول</button>
+      </form>
+    </section>
+
+    <!-- لوحة التحكم (مخفية حتى تسجيل الدخول) -->
+    <div id="adminPanel" style="display: none;">
     <h1>لوحة الإدارة</h1>
+    <div class="row" style="justify-content:flex-end;margin-bottom:12px">
+      <button id="logoutBtn" class="btn ghost">تسجيل الخروج</button>
+    </div>
+    <div id="message" style="display:none" aria-live="polite"></div>
     
     <!-- قسم الإحصائيات -->
     <div class="stats-grid">
@@ -44,11 +61,13 @@
 
     <div class="card">
       <h2>إضافة إعلان (يظهر في الصفحة الرئيسية)</h2>
-      <textarea id="announcementInput" rows="3" placeholder="أدخل نص الإعلان هنا..."></textarea>
-      <div class="row">
-        <button id="saveAnn" class="btn">نشر الإعلان</button>
-        <button id="clearAnn" class="btn ghost">إلغاء الإعلان</button>
-      </div>
+      <form id="announcementForm">
+        <textarea id="announcementText" rows="3" placeholder="أدخل نص الإعلان هنا..."></textarea>
+        <div class="row">
+          <button type="submit" id="saveAnn" class="btn">نشر الإعلان</button>
+          <button type="button" id="clearAnn" class="btn ghost" onclick="document.getElementById('announcementText').value='';">مسح</button>
+        </div>
+      </form>
     </div>
 
     <div class="card">
@@ -69,6 +88,7 @@
           </tbody>
         </table>
       </div>
+    </div>
     </div>
   </main>
 

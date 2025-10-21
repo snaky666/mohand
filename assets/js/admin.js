@@ -64,16 +64,32 @@ async function loadStatistics() {
         if (error) throw error;
 
         const totalBookings = bookings.length;
-        const totalRevenue = totalBookings * PRICE_PER_BOOKING;
 
-        // حساب الحجوزات اليوم
-        const today = new Date().toISOString().split('T')[0];
-        const todayBookings = bookings.filter(b => b.day === today).length;
+        // حساب اليوم، الشهر، السنة
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const yearStr = String(now.getFullYear());
+        const monthStr = String(now.getMonth() + 1).padStart(2, '0');
 
-        // تحديث الإحصائيات
-        document.getElementById('totalBookings').textContent = totalBookings;
-        document.getElementById('todayBookings').textContent = todayBookings;
-        document.getElementById('totalRevenue').textContent = `${totalRevenue} دج`;
+        const todayBookings = bookings.filter(b => b.day === todayStr).length;
+        const monthlyCount = bookings.filter(b => typeof b.day === 'string' && b.day.startsWith(`${yearStr}-${monthStr}-`)).length;
+        const yearlyCount = bookings.filter(b => typeof b.day === 'string' && b.day.startsWith(`${yearStr}-`)).length;
+
+        const monthlyIncomeVal = monthlyCount * PRICE_PER_BOOKING;
+        const yearlyIncomeVal = yearlyCount * PRICE_PER_BOOKING;
+
+        // تحديث الإحصائيات مع التحقق من وجود العناصر
+        const totalBookingsEl = document.getElementById('totalBookings');
+        if (totalBookingsEl) totalBookingsEl.textContent = totalBookings;
+
+        const todayBookingsEl = document.getElementById('todayBookings');
+        if (todayBookingsEl) todayBookingsEl.textContent = todayBookings;
+
+        const monthlyIncomeEl = document.getElementById('monthlyIncome');
+        if (monthlyIncomeEl) monthlyIncomeEl.textContent = `${monthlyIncomeVal} دج`;
+
+        const yearlyIncomeEl = document.getElementById('yearlyIncome');
+        if (yearlyIncomeEl) yearlyIncomeEl.textContent = `${yearlyIncomeVal} دج`;
     } catch (error) {
         console.error('Error loading statistics:', error);
     }
