@@ -75,14 +75,9 @@
 
   <main class="container">
     <section class="hero">
-      <h1>✨ العروض والإعلانات</h1>
+      <h1>✨ العروض والخدمات</h1>
       <p class="lead">عرض خاص لعملائنا الكرام</p>
     </section>
-
-    <!-- إعلان كتابي من الإدارة -->
-    <div id="adsAnnouncement" class="announcement-banner" style="display: none;">
-      <p id="adsAnnouncementText"></p>
-    </div>
 
     <!-- عرض الحلاقة الرئيسي -->
     <div class="main-offer">
@@ -165,196 +160,56 @@
     <div class="credits">© 2025 ⵎⵓⵃⵎⵎⴷ barber</div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase-config.js"></script>
   <script>
-    async function loadAnnouncement() {
-      console.log('🔄 Loading announcement from Supabase...');
-      try {
-        if (!supabase) {
-          console.error('❌ Supabase not initialized');
-          return "";
-        }
+    // إعداد روابط واتساب
+    const waLink = document.getElementById("waLink");
+    const waFooter = document.getElementById("whatsappFooter");
+    const waSidebar = document.getElementById("waSidebar");
+    const phoneForWA = "213557364841";
+    if (waLink) waLink.href = `https://wa.me/${phoneForWA}`;
+    if (waFooter) waFooter.href = `https://wa.me/${phoneForWA}`;
+    if (waSidebar) waSidebar.href = `https://wa.me/${phoneForWA}`;
 
-        const { data, error } = await supabase
-          .from('announcements')
-          .select('message')
-          .order('created_at', { ascending: false })
-          .limit(1);
-        
-        if (error) {
-          console.error('❌ Error loading announcement:', error);
-          return "";
-        }
-        
-        console.log('📢 Announcement data from DB:', data);
-        const message = (data && data.length > 0) ? data[0].message : "";
-        console.log('📢 Extracted message:', message);
-        return message;
-      } catch (e) {
-        console.error('❌ Exception in loadAnnouncement:', e);
-        return "";
-      }
-    }
-    
-    async function initAds() {
-      console.log('🚀 [ADS PAGE] Starting initAds function...');
-      
-      // انتظر حتى يتم تحميل Supabase
-      let retries = 0;
-      while (!supabase && retries < 10) {
-        console.log('⏳ Waiting for Supabase to load...');
-        await new Promise(resolve => setTimeout(resolve, 100));
-        retries++;
-      }
-      
-      if (!supabase) {
-        console.error('❌ Failed to initialize Supabase after retries');
-        return;
-      }
-      
-      console.log('✅ Supabase is ready, loading announcement...');
+    // إعداد القائمة الجانبية
+    const menuToggle = document.getElementById("menuToggle");
+    const sidebar = document.getElementById("sidebar");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
 
-      // تحميل الإعلان
-      const ann = await loadAnnouncement();
-      console.log('📢 Final announcement text:', ann);
-      
-      const annBanner = document.getElementById("adsAnnouncement");
-      const annText = document.getElementById("adsAnnouncementText");
-      
-      console.log('🔍 Banner element:', annBanner);
-      console.log('🔍 Text element:', annText);
-      
-      if (ann && ann.trim()) {
-        console.log('✅ Displaying announcement:', ann);
-        if (annBanner) {
-          annBanner.style.display = "block";
-          console.log('✅ Banner display set to block');
-        }
-        if (annText) {
-          annText.textContent = ann;
-          console.log('✅ Text content set');
-        }
-      } else {
-        console.log('ℹ️ No announcement to display');
-        if (annBanner) annBanner.style.display = "none";
-      }
-      
-      // روابط واتساب
-      const waLink = document.getElementById("waLink");
-      const waFooter = document.getElementById("whatsappFooter");
-      const waSidebar = document.getElementById("waSidebar");
-      const phoneForWA = "213557364841";
-      if (waLink) waLink.href = `https://wa.me/${phoneForWA}`;
-      if (waFooter) waFooter.href = `https://wa.me/${phoneForWA}`;
-      if (waSidebar) waSidebar.href = `https://wa.me/${phoneForWA}`;
-
-      // Sidebar menu toggle
-      const menuToggle = document.getElementById("menuToggle");
-      const sidebar = document.getElementById("sidebar");
-      const sidebarOverlay = document.getElementById("sidebarOverlay");
-
-      function closeSidebar() {
-        if (menuToggle) menuToggle.classList.remove("active");
-        if (sidebar) sidebar.classList.remove("active");
-        if (sidebarOverlay) sidebarOverlay.classList.remove("active");
-        document.body.style.overflow = "";
-      }
-
-      function openSidebar() {
-        if (menuToggle) menuToggle.classList.add("active");
-        if (sidebar) sidebar.classList.add("active");
-        if (sidebarOverlay) sidebarOverlay.classList.add("active");
-        document.body.style.overflow = "hidden";
-      }
-
-      if (menuToggle && sidebar && sidebarOverlay) {
-        menuToggle.addEventListener("click", () => {
-          if (sidebar.classList.contains("active")) {
-            closeSidebar();
-          } else {
-            openSidebar();
-          }
-        });
-
-        sidebarOverlay.addEventListener("click", closeSidebar);
-
-        const sidebarLinks = sidebar.querySelectorAll("a");
-        sidebarLinks.forEach(link => {
-          link.addEventListener("click", closeSidebar);
-        });
-
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && sidebar.classList.contains("active")) {
-            closeSidebar();
-          }
-        });
-      }
-      
-      console.log('✅ [ADS PAGE] Initialization complete');
-      
-      setupRealtimeSubscription();
+    function closeSidebar() {
+      if (menuToggle) menuToggle.classList.remove("active");
+      if (sidebar) sidebar.classList.remove("active");
+      if (sidebarOverlay) sidebarOverlay.classList.remove("active");
+      document.body.style.overflow = "";
     }
 
-    function setupRealtimeSubscription() {
-      try {
-        // استخدام BroadcastChannel للتواصل بين النوافذ
-        if (typeof BroadcastChannel !== 'undefined') {
-          const channel = new BroadcastChannel('announcements');
-          channel.onmessage = (event) => {
-            console.log('📡 [ADS] تم استقبال تحديث:', event.data);
-            loadAnnouncement().then(msg => {
-              const annBanner = document.getElementById("adsAnnouncement");
-              const annText = document.getElementById("adsAnnouncementText");
-              
-              if (msg && msg.trim()) {
-                if (annBanner) annBanner.style.display = "block";
-                if (annText) annText.textContent = msg;
-                console.log('✅ تم تحديث الإعلان تلقائياً في صفحة العروض');
-              } else {
-                if (annBanner) annBanner.style.display = "none";
-                console.log('ℹ️ تم إخفاء الإعلان');
-              }
-            });
-          };
-          console.log('✅ [ADS] تم الاشتراك في قناة التحديثات المباشرة');
-        }
-
-        // محاولة الاشتراك في Supabase Realtime (في حال كان مفعل)
-        supabase
-          .channel('ads-announcements-channel')
-          .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'announcements' }, 
-            (payload) => {
-              console.log('🔔 تم تحديث الإعلان عبر Supabase في صفحة العروض!', payload);
-              loadAnnouncement().then(msg => {
-                const annBanner = document.getElementById("adsAnnouncement");
-                const annText = document.getElementById("adsAnnouncementText");
-                
-                if (msg && msg.trim()) {
-                  if (annBanner) annBanner.style.display = "block";
-                  if (annText) annText.textContent = msg;
-                  console.log('✅ تم تحديث الإعلان تلقائياً');
-                } else {
-                  if (annBanner) annBanner.style.display = "none";
-                }
-              });
-            }
-          )
-          .subscribe((status) => {
-            if (status === 'SUBSCRIBED') {
-              console.log('✅ [ADS PAGE] تم الاشتراك في Supabase Realtime');
-            }
-          });
-      } catch (error) {
-        console.error('❌ خطأ في إعداد التحديثات الفورية:', error);
-      }
+    function openSidebar() {
+      if (menuToggle) menuToggle.classList.add("active");
+      if (sidebar) sidebar.classList.add("active");
+      if (sidebarOverlay) sidebarOverlay.classList.add("active");
+      document.body.style.overflow = "hidden";
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener("DOMContentLoaded", initAds);
-    } else {
-      initAds();
+    if (menuToggle && sidebar && sidebarOverlay) {
+      menuToggle.addEventListener("click", () => {
+        if (sidebar.classList.contains("active")) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      });
+
+      sidebarOverlay.addEventListener("click", closeSidebar);
+
+      const sidebarLinks = sidebar.querySelectorAll("a");
+      sidebarLinks.forEach(link => {
+        link.addEventListener("click", closeSidebar);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && sidebar.classList.contains("active")) {
+          closeSidebar();
+        }
+      });
     }
   </script>
 </body>

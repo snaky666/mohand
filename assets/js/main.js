@@ -72,27 +72,6 @@ async function saveBooking(booking) {
   }
 }
 
-async function loadAnnouncement() {
-  try {
-    const { data, error } = await supabaseClient
-      .from('announcements')
-      .select('message')
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (error) {
-      console.error('❌ Error loading announcement:', error);
-      return "";
-    }
-    
-    console.log('📢 Announcement data:', data);
-    return (data && data.length > 0) ? data[0].message : "";
-  } catch (e) {
-    console.error('❌ Error loading announcement:', e);
-    return "";
-  }
-}
-
 function getDateString(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -254,39 +233,6 @@ async function populateDaySelect() {
   }
 }
 
-async function showAnnouncement() {
-  console.log('🚀 Starting showAnnouncement function...');
-  const msg = await loadAnnouncement();
-  const ann = document.getElementById("announcement");
-  const homeAnn = document.getElementById("homeAnnouncement");
-  const homeAnnText = document.getElementById("homeAnnouncementText");
-  
-  console.log('📢 Announcement message:', msg);
-  console.log('🔍 Elements found:', {
-    ann: !!ann,
-    homeAnn: !!homeAnn,
-    homeAnnText: !!homeAnnText
-  });
-  
-  if (msg && msg.trim()) {
-    // عرض الإعلان في المكانين
-    if (ann) {
-      ann.textContent = msg;
-      ann.style.display = "block";
-      console.log('✅ Announcement displayed in hero section');
-    }
-    if (homeAnn && homeAnnText) {
-      homeAnnText.textContent = msg;
-      homeAnn.style.display = "block";
-      console.log('✅ Announcement displayed in banner');
-    }
-  } else {
-    console.log('ℹ️ No announcement to display');
-    if (ann) ann.style.display = "none";
-    if (homeAnn) homeAnn.style.display = "none";
-  }
-}
-
 async function handleBookingSubmit(e) {
   e.preventDefault();
   const name = document.getElementById("name").value.trim();
@@ -400,7 +346,6 @@ async function initApp() {
 
   setupWhatsAppLinks();
   setupSidebar();
-  await showAnnouncement();
   await populateDaySelect();
   await renderBookings();
 
@@ -414,38 +359,7 @@ async function initApp() {
 
 function setupRealtimeSubscription() {
   try {
-    // استخدام BroadcastChannel للتواصل بين النوافذ
-    if (typeof BroadcastChannel !== 'undefined') {
-      const channel = new BroadcastChannel('announcements');
-      channel.onmessage = (event) => {
-        console.log('📡 تم استقبال تحديث:', event.data);
-        if (event.data.type === 'announcement_updated') {
-          showAnnouncement();
-          console.log('🔄 تم تحديث الإعلان تلقائياً');
-        } else if (event.data.type === 'announcement_deleted') {
-          showAnnouncement();
-          console.log('🔄 تم حذف الإعلان تلقائياً');
-        }
-      };
-      console.log('✅ تم الاشتراك في قناة التحديثات المباشرة');
-    }
-
-    // محاولة الاشتراك في Supabase Realtime (في حال كان مفعل)
-    supabaseClient
-      .channel('announcements-channel')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'announcements' }, 
-        (payload) => {
-          console.log('🔔 تم تحديث الإعلان عبر Supabase!', payload);
-          showAnnouncement();
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ تم الاشتراك في Supabase Realtime للإعلانات');
-        }
-      });
-
+    // الاشتراك في تحديثات الحجوزات فقط
     supabaseClient
       .channel('bookings-channel')
       .on('postgres_changes', 
@@ -459,7 +373,7 @@ function setupRealtimeSubscription() {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('✅ تم الاشتراك في Supabase Realtime للحجوزات');
+          console.log('✅ تم الاشتراك في التحديثات الفورية للحجوزات');
         }
       });
   } catch (error) {
