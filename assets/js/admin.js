@@ -70,10 +70,23 @@ async function loadStatistics() {
         const today = new Date().toISOString().split('T')[0];
         const todayBookings = bookings.filter(b => b.day === today).length;
 
+        // حساب الدخل الشهري والسنوي
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        const monthlyBookings = bookings.filter(b => {
+            const bookingDate = new Date(b.day);
+            return bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear;
+        }).length;
+        const yearlyBookings = bookings.filter(b => {
+            const bookingDate = new Date(b.day);
+            return bookingDate.getFullYear() === currentYear;
+        }).length;
+
         // تحديث الإحصائيات
         document.getElementById('totalBookings').textContent = totalBookings;
         document.getElementById('todayBookings').textContent = todayBookings;
-        document.getElementById('totalRevenue').textContent = `${totalRevenue} دج`;
+        document.getElementById('monthlyIncome').textContent = `${monthlyBookings * PRICE_PER_BOOKING} دج`;
+        document.getElementById('yearlyIncome').textContent = `${yearlyBookings * PRICE_PER_BOOKING} دج`;
     } catch (error) {
         console.error('Error loading statistics:', error);
     }
@@ -196,7 +209,7 @@ async function loadAnnouncement() {
         if (error) throw error;
 
         if (announcements && announcements.length > 0) {
-            document.getElementById('announcementText').value = announcements[0].message;
+            document.getElementById('announcementInput').value = announcements[0].message;
         }
     } catch (error) {
         console.error('Error loading announcement:', error);
@@ -204,10 +217,10 @@ async function loadAnnouncement() {
 }
 
 // حفظ الإعلان
-document.getElementById('announcementForm')?.addEventListener('submit', async (e) => {
+document.getElementById('saveAnn')?.addEventListener('click', async (e) => {
     e.preventDefault();
 
-    const message = document.getElementById('announcementText').value.trim();
+    const message = document.getElementById('announcementInput').value.trim();
     if (!message) {
         alert('الرجاء إدخال نص الإعلان');
         return;
@@ -245,7 +258,39 @@ document.getElementById('announcementForm')?.addEventListener('submit', async (e
     }
 });
 
-// تحميل البيانات عند فتح الصفحة (بدون تسجيل دخول - للعرض فقط)
+// إلغاء الإعلان
+document.getElementById('clearAnn')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    if (!confirm('هل أنت متأكد من إلغاء الإعلان؟')) {
+        return;
+    }
+
+    try {
+        const { data: existing } = await supabaseAdmin
+            .from('announcements')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (existing && existing.length > 0) {
+            const { error } = await supabaseAdmin
+                .from('announcements')
+                .delete()
+                .eq('id', existing[0].id);
+
+            if (error) throw error;
+        }
+
+        document.getElementById('announcementInput').value = '';
+        alert('تم إلغاء الإعلان بنجاح!');
+    } catch (error) {
+        console.error('Error clearing announcement:', error);
+        alert('حدث خطأ أثناء إلغاء الإعلان');
+    }
+});
+
+// تحميل البيانات عند فتح الصفحة
 window.addEventListener('DOMContentLoaded', async () => {
     console.log('📄 Admin page loaded');
     
@@ -255,10 +300,15 @@ window.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // تحميل الحجوزات للعرض فقط (قبل تسجيل الدخول)
-    const tableBody = document.getElementById('bookingsTable');
-    if (tableBody && !currentPassword) {
-        tableBody.innerHTML = '<tr><td colspan="5" class="empty-state">يرجى تسجيل الدخول لعرض الحجوزات</td></tr>';
+    // إخفاء لوحة الإدارة وإظهار نموذج تسجيل الدخول
+    const loginSection = document.getElementById('loginSection');
+    const adminPanel = document.getElementById('adminPanel');
+    
+    if (loginSection) {
+        loginSection.style.display = 'block';
+    }
+    if (adminPanel) {
+        adminPanel.style.display = 'none';
     }
     
     console.log('✅ Admin page initialized');

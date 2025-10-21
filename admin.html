@@ -16,10 +16,34 @@
   </header>
 
   <main class="container admin">
-    <h1>لوحة الإدارة</h1>
-    
-    <!-- قسم الإحصائيات -->
-    <div class="stats-grid">
+    <!-- قسم تسجيل الدخول -->
+    <div id="loginSection" class="card" style="max-width: 400px; margin: 50px auto;">
+      <h1>تسجيل دخول الإدارة</h1>
+      <form id="loginForm">
+        <div style="margin-bottom: 20px;">
+          <label for="password" style="display: block; margin-bottom: 8px; font-weight: bold;">كلمة المرور:</label>
+          <input 
+            type="password" 
+            id="password" 
+            required 
+            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px;"
+            placeholder="أدخل كلمة مرور الإدارة"
+          />
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">تسجيل الدخول</button>
+      </form>
+      <div id="message" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
+    </div>
+
+    <!-- لوحة الإدارة (مخفية في البداية) -->
+    <div id="adminPanel" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1>لوحة الإدارة</h1>
+        <button id="logoutBtn" class="btn ghost">تسجيل الخروج</button>
+      </div>
+      
+      <!-- قسم الإحصائيات -->
+      <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">📊</div>
         <div class="stat-label">إجمالي الحجوزات</div>
@@ -70,6 +94,7 @@
         </table>
       </div>
     </div>
+    </div> <!-- إغلاق div adminPanel -->
   </main>
 
   <footer class="footer">
