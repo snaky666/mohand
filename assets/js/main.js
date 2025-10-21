@@ -19,8 +19,43 @@ function initSupabase() {
   }
 }
 
-function getDailyCapacity(date) {
+async function loadDaySettingsFromSupabase() {
+  const now = Date.now();
+  if (cachedDaySettings && (now - daySettingsCacheTimestamp) < CACHE_DURATION) {
+    return cachedDaySettings;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('day_settings')
+      .select('*');
+
+    if (error) {
+      console.error('Error loading day settings:', error);
+      return null;
+    }
+
+    cachedDaySettings = data;
+    daySettingsCacheTimestamp = now;
+    return data;
+  } catch (e) {
+    console.error('Error loading day settings:', e);
+    return null;
+  }
+}
+
+async function getDailyCapacity(date) {
   const dayOfWeek = date.getDay();
+  
+  const settings = await loadDaySettingsFromSupabase();
+  
+  if (settings && settings.length > 0) {
+    const daySetting = settings.find(s => s.day_of_week === dayOfWeek);
+    if (daySetting) {
+      return daySetting.is_active ? daySetting.capacity : 0;
+    }
+  }
+  
   if (dayOfWeek === 3) {
     return 0;
   } else if (dayOfWeek === 5 || dayOfWeek === 6) {
@@ -88,6 +123,10 @@ let cachedDates = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 30000; // 30 ثانية
 
+// تخزين مؤقت لإعدادات الأيام
+let cachedDaySettings = null;
+let daySettingsCacheTimestamp = 0;
+
 async function getAvailableDates(forceRefresh = false) {
   // استخدام البيانات المخزنة مؤقتاً إذا كانت حديثة
   const now = Date.now();
@@ -121,7 +160,7 @@ async function getAvailableDates(forceRefresh = false) {
   while (daysAdded < TOTAL_DAYS && offset < MAX_SEARCH_DAYS) {
     const date = new Date(today);
     date.setDate(today.getDate() + offset);
-    const capacity = getDailyCapacity(date);
+    const capacity = await getDailyCapacity(date);
 
     if (capacity > 0) {
       const dateStr = getDateString(date);
@@ -256,7 +295,7 @@ async function handleBookingSubmit(e) {
     // التحقق النهائي من التوافر قبل الحفظ
     const currentBooked = await countForDate(day);
     const dateObj = new Date(day + 'T00:00:00');
-    const capacity = getDailyCapacity(dateObj);
+    const capacity = await getDailyCapacity(dateObj);
     
     if (currentBooked >= capacity) {
       showMessage("عذراً، هذا اليوم ممتلئ", "error");

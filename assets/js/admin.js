@@ -39,6 +39,7 @@ async function loadDashboard() {
         
         await Promise.all([
             loadStatistics(),
+            loadDaySettings(),
             loadBookings()
         ]);
         console.log('✅ Dashboard loaded successfully');
@@ -159,6 +160,141 @@ async function deleteBooking(id) {
     } catch (error) {
         console.error('Error deleting booking:', error);
         alert('خطأ في حذف الحجز: ' + error.message);
+    }
+}
+
+// ========================================
+// إدارة إعدادات الأيام
+// ========================================
+
+async function loadDaySettings() {
+    const tableBody = document.getElementById('daySettingsTable');
+    
+    try {
+        if (!supabase) {
+            console.error('❌ Supabase not initialized');
+            throw new Error('Supabase not initialized');
+        }
+
+        if (!tableBody) {
+            console.error('❌ Day settings table not found');
+            return;
+        }
+
+        tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">جارٍ التحميل...</td></tr>';
+
+        console.log('🔄 Fetching day settings from Supabase...');
+        
+        const { data: daySettings, error } = await supabase
+            .from('day_settings')
+            .select('*')
+            .order('day_of_week', { ascending: true });
+
+        if (error) {
+            console.error('❌ Supabase error details:', error);
+            throw new Error(error.message || 'فشل تحميل إعدادات الأيام');
+        }
+
+        console.log('✅ Loaded day settings:', daySettings?.length || 0);
+
+        tableBody.innerHTML = '';
+
+        if (!daySettings || daySettings.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">لا توجد إعدادات. يرجى تشغيل ملف SQL الخاص بالإعداد.</td></tr>';
+            return;
+        }
+
+        daySettings.forEach(setting => {
+            const row = document.createElement('tr');
+            row.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
+            
+            const statusBadge = setting.is_active 
+                ? '<span style="background: rgba(76, 175, 80, 0.2); color: #4caf50; padding: 4px 12px; border-radius: 12px; font-size: 14px;">مفتوح</span>'
+                : '<span style="background: rgba(244, 67, 54, 0.2); color: #f44336; padding: 4px 12px; border-radius: 12px; font-size: 14px;">مغلق</span>';
+            
+            row.innerHTML = `
+                <td style="padding: 12px;">${escapeHtml(setting.day_name_ar)}</td>
+                <td style="padding: 12px;">
+                    <input 
+                        type="number" 
+                        id="capacity_${setting.day_of_week}" 
+                        value="${setting.capacity}" 
+                        min="0" 
+                        max="50"
+                        style="width: 80px; padding: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; text-align: center;"
+                    />
+                </td>
+                <td style="padding: 12px;">${statusBadge}</td>
+                <td style="padding: 12px;">
+                    <button 
+                        class="btn" 
+                        style="padding: 6px 12px; font-size: 14px; margin-left: 8px;"
+                        onclick="updateDaySetting('${setting.id}', ${setting.day_of_week}, ${!setting.is_active})"
+                    >
+                        ${setting.is_active ? '🔒 إغلاق' : '🔓 فتح'}
+                    </button>
+                    <button 
+                        class="btn" 
+                        style="padding: 6px 12px; font-size: 14px; background: rgba(76, 175, 80, 0.8);"
+                        onclick="saveCapacity('${setting.id}', ${setting.day_of_week})"
+                    >
+                        💾 حفظ السعة
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('❌ Error loading day settings:', error);
+        if (tableBody) {
+            tableBody.innerHTML = `<tr><td colspan="4" class="empty-state" style="color: #ff7b7b;">خطأ في تحميل إعدادات الأيام: ${error.message}</td></tr>`;
+        }
+    }
+}
+
+async function updateDaySetting(id, dayOfWeek, newActiveState) {
+    try {
+        console.log(`🔄 Updating day ${dayOfWeek} to ${newActiveState ? 'active' : 'inactive'}`);
+        
+        const { error } = await supabase
+            .from('day_settings')
+            .update({ is_active: newActiveState })
+            .eq('id', id);
+
+        if (error) throw error;
+
+        alert(`تم ${newActiveState ? 'فتح' : 'إغلاق'} اليوم بنجاح!`);
+        loadDaySettings();
+    } catch (error) {
+        console.error('Error updating day setting:', error);
+        alert('خطأ في تحديث إعدادات اليوم: ' + error.message);
+    }
+}
+
+async function saveCapacity(id, dayOfWeek) {
+    try {
+        const capacityInput = document.getElementById(`capacity_${dayOfWeek}`);
+        const newCapacity = parseInt(capacityInput.value);
+
+        if (isNaN(newCapacity) || newCapacity < 0) {
+            alert('الرجاء إدخال رقم صحيح (0 أو أكثر)');
+            return;
+        }
+
+        console.log(`💾 Saving capacity ${newCapacity} for day ${dayOfWeek}`);
+        
+        const { error } = await supabase
+            .from('day_settings')
+            .update({ capacity: newCapacity })
+            .eq('id', id);
+
+        if (error) throw error;
+
+        alert('تم حفظ السعة بنجاح!');
+        loadDaySettings();
+    } catch (error) {
+        console.error('Error saving capacity:', error);
+        alert('خطأ في حفظ السعة: ' + error.message);
     }
 }
 
