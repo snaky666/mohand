@@ -244,6 +244,53 @@ document.getElementById('announcementForm')?.addEventListener('submit', async (e
     }
 });
 
+async function deleteAnnouncement() {
+    if (!confirm('هل أنت متأكد من حذف الإعلان؟')) {
+        return;
+    }
+
+    console.log('🗑️ Deleting announcement...');
+
+    try {
+        if (!supabase) {
+            throw new Error('Supabase not initialized');
+        }
+
+        const { data: existing, error: fetchError } = await supabase
+            .from('announcements')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (fetchError) {
+            console.error('❌ Error fetching announcement:', fetchError);
+            throw fetchError;
+        }
+
+        if (!existing || existing.length === 0) {
+            alert('لا يوجد إعلان لحذفه');
+            return;
+        }
+
+        const { error } = await supabase
+            .from('announcements')
+            .delete()
+            .eq('id', existing[0].id);
+
+        if (error) {
+            console.error('❌ Delete error:', error);
+            throw error;
+        }
+
+        console.log('✅ Announcement deleted successfully');
+        document.getElementById('announcementText').value = '';
+        alert('تم حذف الإعلان بنجاح!');
+    } catch (error) {
+        console.error('❌ Error deleting announcement:', error);
+        alert('حدث خطأ أثناء حذف الإعلان: ' + error.message);
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     console.log('📄 Admin page loaded - login required');
     
