@@ -253,11 +253,22 @@ async function populateDaySelect() {
 async function showAnnouncement() {
   const msg = await loadAnnouncement();
   const ann = document.getElementById("announcement");
+  const homeAnn = document.getElementById("homeAnnouncement");
+  const homeAnnText = document.getElementById("homeAnnouncementText");
+  
   if (msg) {
-    ann.textContent = msg;
-    ann.style.display = "block";
+    // عرض الإعلان في المكانين
+    if (ann) {
+      ann.textContent = msg;
+      ann.style.display = "block";
+    }
+    if (homeAnn && homeAnnText) {
+      homeAnnText.textContent = msg;
+      homeAnn.style.display = "block";
+    }
   } else {
-    ann.style.display = "none";
+    if (ann) ann.style.display = "none";
+    if (homeAnn) homeAnn.style.display = "none";
   }
 }
 

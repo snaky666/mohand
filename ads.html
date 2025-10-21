@@ -183,15 +183,29 @@
 
     async function loadAnnouncement() {
       try {
+        if (!supabase) {
+          console.error('Supabase not initialized');
+          return "";
+        }
+
         const { data, error } = await supabase
           .from('announcements')
           .select('message')
           .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+          .limit(1);
         
-        if (error) throw error;
-        return data?.message || "";
+        if (error) {
+          console.error('Error loading announcement:', error);
+          return "";
+        }
+        
+        // التحقق من وجود بيانات
+        if (data && data.length > 0) {
+          console.log('✅ Announcement loaded:', data[0].message);
+          return data[0].message;
+        }
+        
+        return "";
       } catch (e) {
         console.error('Error loading announcement:', e);
         return "";
@@ -205,10 +219,20 @@
         return;
       }
 
+      // تحميل الإعلان
       const ann = await loadAnnouncement();
-      if (ann.trim()) {
-        document.getElementById("adsAnnouncement").style.display = "block";
-        document.getElementById("adsAnnouncementText").textContent = ann;
+      console.log('Announcement text:', ann);
+      
+      const annBanner = document.getElementById("adsAnnouncement");
+      const annText = document.getElementById("adsAnnouncementText");
+      
+      if (ann && ann.trim()) {
+        console.log('✅ Displaying announcement');
+        if (annBanner) annBanner.style.display = "block";
+        if (annText) annText.textContent = ann;
+      } else {
+        console.log('ℹ️ No announcement to display');
+        if (annBanner) annBanner.style.display = "none";
       }
       
       // روابط واتساب
