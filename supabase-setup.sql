@@ -157,7 +157,27 @@ DROP TRIGGER IF EXISTS update_day_settings_updated_at ON public.day_settings;
 CREATE TRIGGER update_day_settings_updated_at BEFORE UPDATE ON public.day_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- تفعيل Realtime للجداول
-ALTER PUBLICATION supabase_realtime ADD TABLE public.bookings;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.announcements;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.day_settings;
+-- تفعيل Realtime للجداول (إذا لم تكن مفعلة بالفعل)
+DO $$
+BEGIN
+    -- محاولة إضافة bookings
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.bookings;
+    EXCEPTION WHEN duplicate_object THEN
+        NULL; -- الجدول موجود بالفعل
+    END;
+    
+    -- محاولة إضافة announcements
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.announcements;
+    EXCEPTION WHEN duplicate_object THEN
+        NULL; -- الجدول موجود بالفعل
+    END;
+    
+    -- محاولة إضافة day_settings
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.day_settings;
+    EXCEPTION WHEN duplicate_object THEN
+        NULL; -- الجدول موجود بالفعل
+    END;
+END $$;
