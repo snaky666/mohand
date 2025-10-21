@@ -16,60 +16,79 @@
   </header>
 
   <main class="container admin">
-    <h1>لوحة الإدارة</h1>
-    
-    <!-- قسم الإحصائيات -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">📊</div>
-        <div class="stat-label">إجمالي الحجوزات</div>
-        <div class="stat-value" id="totalBookings">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">💰</div>
-        <div class="stat-label">الدخل الشهري</div>
-        <div class="stat-value" id="monthlyIncome">0 دج</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">💎</div>
-        <div class="stat-label">الدخل السنوي</div>
-        <div class="stat-value" id="yearlyIncome">0 دج</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">📅</div>
-        <div class="stat-label">حجوزات اليوم</div>
-        <div class="stat-value" id="todayBookings">0</div>
-      </div>
-    </div>
+    <section id="loginSection" class="card">
+      <h1>تسجيل الدخول</h1>
+      <form id="loginForm" autocomplete="off">
+        <label>كلمة المرور
+          <input type="password" id="password" required placeholder="••••••••" />
+        </label>
+        <button type="submit" class="btn">دخول</button>
+      </form>
+      <div id="message" role="status" aria-live="polite" style="display:none"></div>
+    </section>
 
-    <div class="card">
-      <h2>إضافة إعلان (يظهر في الصفحة الرئيسية)</h2>
-      <textarea id="announcementInput" rows="3" placeholder="أدخل نص الإعلان هنا..."></textarea>
+    <section id="adminPanel" style="display: none;">
+      <h1>لوحة الإدارة</h1>
+      
+      <!-- قسم الإحصائيات -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-label">إجمالي الحجوزات</div>
+          <div class="stat-value" id="totalBookings">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-label">الدخل الشهري</div>
+          <div class="stat-value" id="monthlyIncome">0 دج</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💎</div>
+          <div class="stat-label">الدخل السنوي</div>
+          <div class="stat-value" id="yearlyIncome">0 دج</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-label">حجوزات اليوم</div>
+          <div class="stat-value" id="todayBookings">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>الإعلان (يظهر في الصفحة الرئيسية)</h2>
+        <form id="announcementForm">
+          <textarea id="announcementText" rows="3" placeholder="أدخل نص الإعلان هنا..."></textarea>
+          <div class="row">
+            <button type="submit" class="btn">حفظ الإعلان</button>
+            <button type="button" id="clearAnn" class="btn ghost">إلغاء الإعلان</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>قائمة الحجوزات</h2>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: rgba(255, 255, 255, 0.1); text-align: right;">
+                <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">الاسم</th>
+                <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">الهاتف</th>
+                <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">تاريخ الحجز</th>
+                <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">وقت الإنشاء</th>
+                <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTable">
+              <tr><td colspan="5" class="empty-state">يرجى تسجيل الدخول لعرض الحجوزات</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="row">
-        <button id="saveAnn" class="btn">نشر الإعلان</button>
-        <button id="clearAnn" class="btn ghost">إلغاء الإعلان</button>
+        <button id="logoutBtn" class="btn ghost">تسجيل الخروج</button>
       </div>
-    </div>
-
-    <div class="card">
-      <h2>قائمة الحجوزات</h2>
-      <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="background: rgba(255, 255, 255, 0.1); text-align: right;">
-              <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">الاسم</th>
-              <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">الهاتف</th>
-              <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">تاريخ الحجز</th>
-              <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">وقت الإنشاء</th>
-              <th style="padding: 12px; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody id="bookingsTable">
-            <tr><td colspan="5" class="empty-state">جارٍ التحميل...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </section>
   </main>
 
   <footer class="footer">
