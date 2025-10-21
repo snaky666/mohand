@@ -78,13 +78,17 @@ async function loadAnnouncement() {
       .from('announcements')
       .select('message')
       .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(1);
 
-    if (error) throw error;
-    return data?.message || "";
+    if (error) {
+      console.error('❌ Error loading announcement:', error);
+      return "";
+    }
+    
+    console.log('📢 Announcement data:', data);
+    return (data && data.length > 0) ? data[0].message : "";
   } catch (e) {
-    console.error('Error loading announcement:', e);
+    console.error('❌ Error loading announcement:', e);
     return "";
   }
 }
@@ -256,17 +260,22 @@ async function showAnnouncement() {
   const homeAnn = document.getElementById("homeAnnouncement");
   const homeAnnText = document.getElementById("homeAnnouncementText");
   
-  if (msg) {
+  console.log('📢 Showing announcement:', msg);
+  
+  if (msg && msg.trim()) {
     // عرض الإعلان في المكانين
     if (ann) {
       ann.textContent = msg;
       ann.style.display = "block";
+      console.log('✅ Announcement displayed in hero section');
     }
     if (homeAnn && homeAnnText) {
       homeAnnText.textContent = msg;
       homeAnn.style.display = "block";
+      console.log('✅ Announcement displayed in banner');
     }
   } else {
+    console.log('ℹ️ No announcement to display');
     if (ann) ann.style.display = "none";
     if (homeAnn) homeAnn.style.display = "none";
   }

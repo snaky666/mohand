@@ -171,7 +171,7 @@
     async function loadAnnouncement() {
       try {
         if (!supabase) {
-          console.error('Supabase not initialized');
+          console.error('❌ Supabase not initialized');
           return "";
         }
 
@@ -179,17 +179,17 @@
           .from('announcements')
           .select('message')
           .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+          .limit(1);
         
         if (error) {
-          console.error('Error loading announcement:', error);
+          console.error('❌ Error loading announcement:', error);
           return "";
         }
         
-        return data?.message || "";
+        console.log('📢 Announcement data:', data);
+        return (data && data.length > 0) ? data[0].message : "";
       } catch (e) {
-        console.error('Error loading announcement:', e);
+        console.error('❌ Error loading announcement:', e);
         return "";
       }
     }
