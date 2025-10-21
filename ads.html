@@ -298,12 +298,35 @@
 
     function setupRealtimeSubscription() {
       try {
+        // استخدام BroadcastChannel للتواصل بين النوافذ
+        if (typeof BroadcastChannel !== 'undefined') {
+          const channel = new BroadcastChannel('announcements');
+          channel.onmessage = (event) => {
+            console.log('📡 [ADS] تم استقبال تحديث:', event.data);
+            loadAnnouncement().then(msg => {
+              const annBanner = document.getElementById("adsAnnouncement");
+              const annText = document.getElementById("adsAnnouncementText");
+              
+              if (msg && msg.trim()) {
+                if (annBanner) annBanner.style.display = "block";
+                if (annText) annText.textContent = msg;
+                console.log('✅ تم تحديث الإعلان تلقائياً في صفحة العروض');
+              } else {
+                if (annBanner) annBanner.style.display = "none";
+                console.log('ℹ️ تم إخفاء الإعلان');
+              }
+            });
+          };
+          console.log('✅ [ADS] تم الاشتراك في قناة التحديثات المباشرة');
+        }
+
+        // محاولة الاشتراك في Supabase Realtime (في حال كان مفعل)
         supabase
           .channel('ads-announcements-channel')
           .on('postgres_changes', 
             { event: '*', schema: 'public', table: 'announcements' }, 
             (payload) => {
-              console.log('🔔 تم تحديث الإعلان في صفحة العروض!', payload);
+              console.log('🔔 تم تحديث الإعلان عبر Supabase في صفحة العروض!', payload);
               loadAnnouncement().then(msg => {
                 const annBanner = document.getElementById("adsAnnouncement");
                 const annText = document.getElementById("adsAnnouncementText");
@@ -320,7 +343,7 @@
           )
           .subscribe((status) => {
             if (status === 'SUBSCRIBED') {
-              console.log('✅ [ADS PAGE] تم الاشتراك في التحديثات الفورية');
+              console.log('✅ [ADS PAGE] تم الاشتراك في Supabase Realtime');
             }
           });
       } catch (error) {

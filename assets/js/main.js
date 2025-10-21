@@ -414,18 +414,35 @@ async function initApp() {
 
 function setupRealtimeSubscription() {
   try {
+    // استخدام BroadcastChannel للتواصل بين النوافذ
+    if (typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel('announcements');
+      channel.onmessage = (event) => {
+        console.log('📡 تم استقبال تحديث:', event.data);
+        if (event.data.type === 'announcement_updated') {
+          showAnnouncement();
+          console.log('🔄 تم تحديث الإعلان تلقائياً');
+        } else if (event.data.type === 'announcement_deleted') {
+          showAnnouncement();
+          console.log('🔄 تم حذف الإعلان تلقائياً');
+        }
+      };
+      console.log('✅ تم الاشتراك في قناة التحديثات المباشرة');
+    }
+
+    // محاولة الاشتراك في Supabase Realtime (في حال كان مفعل)
     supabaseClient
       .channel('announcements-channel')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'announcements' }, 
         (payload) => {
-          console.log('🔔 تم تحديث الإعلان!', payload);
+          console.log('🔔 تم تحديث الإعلان عبر Supabase!', payload);
           showAnnouncement();
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('✅ تم الاشتراك في التحديثات الفورية للإعلانات');
+          console.log('✅ تم الاشتراك في Supabase Realtime للإعلانات');
         }
       });
 
@@ -442,7 +459,7 @@ function setupRealtimeSubscription() {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('✅ تم الاشتراك في التحديثات الفورية للحجوزات');
+          console.log('✅ تم الاشتراك في Supabase Realtime للحجوزات');
         }
       });
   } catch (error) {

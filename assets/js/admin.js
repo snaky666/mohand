@@ -238,6 +238,13 @@ document.getElementById('announcementForm')?.addEventListener('submit', async (e
         }
 
         alert('تم حفظ الإعلان بنجاح! سيظهر في الصفحة الرئيسية وصفحة الإعلانات.');
+        
+        // إرسال رسالة لجميع النوافذ المفتوحة لتحديث الإعلان
+        if (typeof BroadcastChannel !== 'undefined') {
+            const channel = new BroadcastChannel('announcements');
+            channel.postMessage({ type: 'announcement_updated', message });
+            console.log('📡 تم إرسال إشعار التحديث لجميع الصفحات');
+        }
     } catch (error) {
         console.error('❌ Error saving announcement:', error);
         alert('حدث خطأ أثناء حفظ الإعلان: ' + error.message);
@@ -285,6 +292,13 @@ async function deleteAnnouncement() {
         console.log('✅ Announcement deleted successfully');
         document.getElementById('announcementText').value = '';
         alert('تم حذف الإعلان بنجاح!');
+        
+        // إرسال رسالة لجميع النوافذ المفتوحة لتحديث الإعلان
+        if (typeof BroadcastChannel !== 'undefined') {
+            const channel = new BroadcastChannel('announcements');
+            channel.postMessage({ type: 'announcement_deleted' });
+            console.log('📡 تم إرسال إشعار الحذف لجميع الصفحات');
+        }
     } catch (error) {
         console.error('❌ Error deleting announcement:', error);
         alert('حدث خطأ أثناء حذف الإعلان: ' + error.message);
