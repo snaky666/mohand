@@ -156,21 +156,16 @@ async function deleteBooking(id) {
     }
 
     try {
-        const response = await fetch('/api/admin/delete-booking', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, password: currentPassword })
-        });
+        const { error } = await supabase
+            .from('bookings')
+            .delete()
+            .eq('id', id);
 
-        const result = await response.json();
+        if (error) throw error;
 
-        if (response.ok && result.success) {
-            alert('تم حذف الحجز بنجاح!');
-            loadBookings();
-            loadStatistics();
-        } else {
-            alert('فشل حذف الحجز: ' + (result.error || 'خطأ غير معروف'));
-        }
+        alert('تم حذف الحجز بنجاح!');
+        loadBookings();
+        loadStatistics();
     } catch (error) {
         console.error('Error deleting booking:', error);
         alert('خطأ في حذف الحجز: ' + error.message);
@@ -205,19 +200,28 @@ document.getElementById('announcementForm')?.addEventListener('submit', async (e
     }
 
     try {
-        const response = await fetch('/api/admin/update-announcement', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, password: currentPassword })
-        });
+        const { data: existing } = await supabase
+            .from('announcements')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-        const result = await response.json();
+        if (existing && existing.length > 0) {
+            const { error } = await supabase
+                .from('announcements')
+                .update({ message })
+                .eq('id', existing[0].id);
 
-        if (response.ok && result.success) {
-            alert('تم حفظ الإعلان بنجاح!');
+            if (error) throw error;
         } else {
-            alert('فشل حفظ الإعلان: ' + (result.error || 'خطأ غير معروف'));
+            const { error } = await supabase
+                .from('announcements')
+                .insert({ message });
+
+            if (error) throw error;
         }
+
+        alert('تم حفظ الإعلان بنجاح!');
     } catch (error) {
         console.error('Error saving announcement:', error);
         alert('حدث خطأ أثناء حفظ الإعلان');

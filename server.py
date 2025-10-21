@@ -2,19 +2,6 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
 import json
-from urllib.parse import urlparse
-from supabase import create_client
-
-supabase_admin_client = None
-
-def get_supabase_admin():
-    global supabase_admin_client
-    if supabase_admin_client is None:
-        url = os.environ.get('SUPABASE_URL', '')
-        key = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
-        if url and key:
-            supabase_admin_client = create_client(url, key)
-    return supabase_admin_client
 
 class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
     
@@ -38,17 +25,15 @@ class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
             super().do_GET()
     
     def do_POST(self):
-        parsed_path = urlparse(self.path)
-        
-        content_length = int(self.headers.get('Content-Length', 0))
-        body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
-        
-        try:
-            data = json.loads(body)
-        except:
-            data = {}
-        
-        if parsed_path.path == '/api/admin/login':
+        if self.path == '/api/admin/login':
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
+            
+            try:
+                data = json.loads(body)
+            except:
+                data = {}
+            
             password = data.get('password', '')
             admin_password = os.environ.get('ADMIN_PASSWORD', 'mohand2004')
             
@@ -62,71 +47,6 @@ class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps({'error': 'Unauthorized'}).encode())
-            return
-        
-        password = data.get('password', '')
-        admin_password = os.environ.get('ADMIN_PASSWORD', 'mohand2004')
-        if password != admin_password:
-            self.send_response(403)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({'error': 'Unauthorized'}).encode())
-            return
-        
-        if parsed_path.path == '/api/admin/delete-booking':
-            booking_id = data.get('id')
-            if not booking_id:
-                self.send_response(400)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'error': 'Missing booking ID'}).encode())
-                return
-            
-            try:
-                client = get_supabase_admin()
-                if not client:
-                    raise Exception('Supabase client not initialized')
-                
-                response = client.table('bookings').delete().eq('id', booking_id).execute()
-                
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'success': True}).encode())
-            except Exception as e:
-                print(f'Error deleting booking: {e}')
-                self.send_response(500)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'error': str(e)}).encode())
-        
-        elif parsed_path.path == '/api/admin/update-announcement':
-            message = data.get('message', '')
-            
-            try:
-                client = get_supabase_admin()
-                if not client:
-                    raise Exception('Supabase client not initialized')
-                
-                response = client.table('announcements').select('*').order('created_at', desc=True).limit(1).execute()
-                
-                if response.data and len(response.data) > 0:
-                    ann_id = response.data[0]['id']
-                    client.table('announcements').update({'message': message}).eq('id', ann_id).execute()
-                else:
-                    client.table('announcements').insert({'message': message}).execute()
-                
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'success': True}).encode())
-            except Exception as e:
-                print(f'Error updating announcement: {e}')
-                self.send_response(500)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'error': str(e)}).encode())
-        
         else:
             self.send_error(404, 'Not Found')
 
