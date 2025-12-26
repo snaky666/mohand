@@ -30,14 +30,20 @@ try {
     window.supabase = window.supabaseClientInstance; // Ensure window.supabase is the client
     console.log('✅ Supabase initialized successfully');
     
-    // اختبار الاتصال
+    // اختبار الاتصال مع معالجة الأخطاء بشكل أفضل
     window.supabase.from('bookings').select('count', { count: 'exact', head: true })
       .then(({ error }) => {
         if (error) {
           console.error('❌ Supabase connection test failed:', error.message);
+          if (error.message === 'Failed to fetch') {
+            console.warn('⚠️ تلميح: قد يكون هناك حظر من المتصفح أو مشكلة في الاتصال بالإنترنت.');
+          }
         } else {
           console.log('✅ Supabase connection test successful');
         }
+      })
+      .catch(err => {
+        console.error('❌ Network error during Supabase connection:', err);
       });
   } else {
     console.error('❌ Supabase library not loaded');
