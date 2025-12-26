@@ -24,7 +24,10 @@ const supabaseOptions = {
 
 try {
   if (typeof window !== 'undefined' && window.supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, supabaseOptions);
+    if (!window.supabaseClientInstance) {
+      window.supabaseClientInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, supabaseOptions);
+    }
+    supabase = window.supabaseClientInstance;
     console.log('✅ Supabase initialized successfully');
     
     // اختبار الاتصال
