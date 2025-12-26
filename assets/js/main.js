@@ -7,12 +7,12 @@ let supabaseClient = null;
 
 function initSupabase() {
   try {
-    // استخدام العميل المُنشأ في supabase-config.js بدلاً من إنشاء واحد جديد
-    if (typeof supabase !== 'undefined' && supabase) {
-      supabaseClient = supabase;
+    // Check if window.supabase is already the client instance
+    if (window.supabase && typeof window.supabase.from === 'function') {
+      supabaseClient = window.supabase;
       return true;
     }
-    // Fallback if global supabase variable is not yet ready but window instance is
+    // Fallback if global window instance is elsewhere
     if (window.supabaseClientInstance) {
       supabaseClient = window.supabaseClientInstance;
       return true;
